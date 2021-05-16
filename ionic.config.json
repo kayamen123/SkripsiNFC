@@ -1,0 +1,7 @@
+{
+  "name": "test-Skripsi",
+  "integrations": {
+    "capacitor": {}
+  },
+  "type": "angular"
+}
