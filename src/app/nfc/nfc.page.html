@@ -1,0 +1,20 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>NFC</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content padding>
+  <h1>Please Scan Access Card</h1>
+  <ion-card>
+    <ion-card-header>
+      Access Granted
+    </ion-card-header>
+    <ion-card-content>
+      <p>Account Tag ID: {{ tagId }}</p>
+    </ion-card-content>
+  </ion-card>
+  <ion-buttons>
+    <ion-button [routerLink]="['/nfc-write']">Write</ion-button>
+  </ion-buttons>
+</ion-content>
