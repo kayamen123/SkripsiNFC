@@ -4,23 +4,27 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 
 import { IonicModule } from '@ionic/angular';
 
-import { NfcPageRoutingModule } from './nfc-routing.module';
+import { RegisterPageRoutingModule } from './register-routing.module';
 
-import { NfcPage } from './nfc.page';
+import { RegisterPage } from './register.page';
 import { AngularFireModule } from '@angular/fire';
-import { environment } from 'src/environments/environment';
 import { AngularFireAuthModule } from '@angular/fire/auth';
 import { AngularFireStorageModule } from '@angular/fire/storage';
 import { AngularFireDatabaseModule } from '@angular/fire/database';
+import { environment } from 'src/environments/environment';
 
 @NgModule({
   imports: [
     CommonModule,
     FormsModule,
     IonicModule,
-    NfcPageRoutingModule,
+    RegisterPageRoutingModule,
     ReactiveFormsModule,
+    AngularFireModule.initializeApp(environment.firebaseConfig),
+    AngularFireAuthModule,
+    AngularFireStorageModule,
+    AngularFireDatabaseModule
   ],
-  declarations: [NfcPage]
+  declarations: [RegisterPage]
 })
-export class NfcPageModule {}
+export class RegisterPageModule {}

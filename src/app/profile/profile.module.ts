@@ -4,17 +4,17 @@ import { FormsModule } from '@angular/forms';
 
 import { IonicModule } from '@ionic/angular';
 
-import { NfcWritePageRoutingModule } from './nfc-write-routing.module';
+import { ProfilePageRoutingModule } from './profile-routing.module';
 
-import { NfcWritePage } from './nfc-write.page';
+import { ProfilePage } from './profile.page';
 
 @NgModule({
   imports: [
     CommonModule,
     FormsModule,
     IonicModule,
-    NfcWritePageRoutingModule
+    ProfilePageRoutingModule
   ],
-  declarations: [NfcWritePage]
+  declarations: [ProfilePage]
 })
-export class NfcWritePageModule {}
+export class ProfilePageModule {}

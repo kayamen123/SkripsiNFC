@@ -1,0 +1,40 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>login</ion-title>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="/regis"></ion-back-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <form [formGroup]="loginForm" (ngSubmit)="submitForm()" novalidate>
+    <ion-item lines="full">
+      <ion-label position="floating">Name</ion-label>
+      <ion-input formControlName="name" type="text"></ion-input>
+    </ion-item>
+    <span style="color: red;" class="error ion-padding" *ngIf="isSubmitted && errorControl.name.errors?.required">
+      Name is required.
+    </span>
+
+    <ion-item lines="full">
+      <ion-label position="floating">Password</ion-label>
+      <ion-input formControlName="password" type="password" (input)="onChange()"></ion-input>
+    </ion-item>
+    <span style="color: red;" class="error ion-padding" *ngIf="isSubmitted && errorControl.password.errors?.required">
+      Password is required.
+    </span>
+    <span style="color: red;" class="error ion-padding" *ngIf="isSubmitted && errorControl.password.errors?.minlength">
+      Password should be min 8 chars long.
+    </span>
+
+    <span style="color: red;" class="error ion-padding" *ngIf="isSubmitted && !passConf">
+      Password Or Name does not Same
+    </span>
+    <ion-row>
+      <ion-col>
+        <ion-button type="submit" color="danger" expand="block">Submit</ion-button>
+      </ion-col>
+    </ion-row>
+  </form>
+</ion-content>

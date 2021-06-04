@@ -4,7 +4,7 @@ import { PreloadAllModules, RouterModule, Routes } from '@angular/router';
 const routes: Routes = [
   {
     path: '',
-    redirectTo: 'nfc-write',
+    redirectTo: 'regis',
     pathMatch: 'full'
   },
   {
@@ -12,8 +12,24 @@ const routes: Routes = [
     loadChildren: () => import('./nfc/nfc.module').then( m => m.NfcPageModule)
   },
   {
-    path: 'nfc-write',
-    loadChildren: () => import('./nfc-write/nfc-write.module').then( m => m.NfcWritePageModule)
+    path: 'regis',
+    loadChildren: () => import('./register/register.module').then(m => m.RegisterPageModule)
+  },
+  {
+    path: 'login',
+    loadChildren: () => import('./login/login.module').then(m => m.LoginPageModule)
+  },
+  {
+    path: 'home',
+    loadChildren: () => import('./home/home.module').then(m => m.HomePageModule)
+  },
+  {
+    path: 'profile',
+    loadChildren: () => import('./profile/profile.module').then( m => m.ProfilePageModule)
+  },
+  {
+    path: 'nfc-pinjam',
+    loadChildren: () => import('./nfc-pinjam/nfc-pinjam.module').then( m => m.NfcPinjamPageModule)
   },
 ];
 

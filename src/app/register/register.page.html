@@ -1,0 +1,89 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>Register</ion-title>
+  <ion-buttons slot="primary">
+    <ion-button [routerLink]="['/login']">login</ion-button>
+  </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <form [formGroup]="registerForm" (ngSubmit)="submitForm()" novalidate>
+    <ion-item lines="full">
+      <ion-label position="floating">Name</ion-label>
+      <ion-input formControlName="name" type="text"></ion-input>
+    </ion-item>
+    <span style="color: red;" class="error ion-padding" *ngIf="isSubmitted && errorControl.name.errors?.required">
+      Name is required.
+    </span>
+    <span style="color: red;" class="error ion-padding" *ngIf="isSubmitted && errorControl.name.errors?.minlength">
+      Name should be min 2 chars long.
+    </span>
+
+    <ion-item lines="full">
+      <ion-label position="floating">Email</ion-label>
+      <ion-input formControlName="email" type="email"></ion-input>
+    </ion-item>
+    <span style="color: red;" class="error ion-padding" *ngIf="isSubmitted && errorControl.email.errors?.required">
+      Email is required.
+    </span>
+    <span style="color: red;" class="error ion-padding" *ngIf="isSubmitted && errorControl.email.errors?.pattern">
+      Please provide valid email id.
+    </span>
+
+    <ion-item>
+      <ion-label>Role</ion-label>
+      <ion-select placeholder="Select One" interface="popover" formControlName="role">
+        <ion-select-option value="admin">Admin</ion-select-option>
+        <ion-select-option value="user">User</ion-select-option>
+      </ion-select>
+    </ion-item>
+
+    <span style="color: red;" class="error ion-padding" *ngIf="isSubmitted && errorControl.role.errors?.required">
+      Role is required.
+    </span>
+
+    <ion-item lines="full">
+      <ion-label position="floating">Mobile</ion-label>
+      <ion-input maxlength="12" formControlName="mobile" type="text" required></ion-input>
+    </ion-item>
+    <span style="color: red;" class="error ion-padding" *ngIf="isSubmitted && errorControl.mobile.errors?.required">
+      Mobile number is required.
+    </span>
+    <span style="color: red;" class="error ion-padding" *ngIf="isSubmitted && errorControl.mobile.errors?.pattern">
+      Only numerical values allowed.
+    </span>
+
+    <ion-item lines="full">
+      <ion-label position="floating">Password</ion-label>
+      <ion-input formControlName="password" type="password"></ion-input>
+    </ion-item>
+    <span style="color: red;" class="error ion-padding" *ngIf="isSubmitted && errorControl.password.errors?.required">
+      Password is required.
+    </span>
+    <span style="color: red;" class="error ion-padding" *ngIf="isSubmitted && errorControl.password.errors?.minlength">
+      Password should be min 8 chars long.
+    </span>
+
+    <ion-item lines="full">
+      <ion-label position="floating">Password Confirmation</ion-label>
+      <ion-input formControlName="password_confirmation" type="password" (input)="onChange()"></ion-input>
+    </ion-item>
+    <span style="color: red;" class="error ion-padding" *ngIf="isSubmitted && errorControl.password_confirmation.errors?.required">
+      Password Confirmation is required.
+    </span>
+    <span style="color: red;" class="error ion-padding" *ngIf="isSubmitted && errorControl.password_confirmation.errors?.minlength">
+      Password should be min 8 chars long.
+    </span>
+
+    <span style="color: red;" class="error ion-padding" *ngIf="isSubmitted && !passConf">
+      Password does not Same
+    </span>
+
+    <ion-row>
+      <ion-col>
+        <ion-button type="submit" color="danger" expand="block">Submit</ion-button>
+      </ion-col>
+    </ion-row>
+  </form>
+</ion-content>

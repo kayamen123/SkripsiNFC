@@ -1,0 +1,23 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>nfc-pinjam</ion-title>
+  </ion-toolbar>
+</ion-header>
+<ion-content>
+  <form [formGroup]="bookForm" (ngSubmit)="submitForm()" novalidate>
+
+    <ion-item lines="full">
+      <ion-label position="floating">Scan Your RFID to Borrow Book :</ion-label>
+      <ion-input maxlength="10" formControlName="rfid" type="text" (ionChange)="onChange()"  [value]="tagId" required></ion-input>
+    </ion-item>
+    <span style="color: red;" class="error ion-padding" *ngIf="isSubmitted && errorControl.rfid.errors?.required">
+      RFID is required.
+    </span>
+
+
+    <span style="color: red;" class="error ion-padding" *ngIf="!bookStatus">
+      Book not in Data
+    </span>
+
+  </form>
+</ion-content>

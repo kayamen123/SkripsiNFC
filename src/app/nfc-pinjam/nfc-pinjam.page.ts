@@ -4,21 +4,27 @@ import { FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms'
 import { Router } from '@angular/router';
 
 import { Ndef, NdefEvent, NFC } from '@ionic-native/nfc/ngx';
-import { AlertController, NavController, Platform, ToastController } from '@ionic/angular';import { RegisterServiceService } from '../service/register-service.service';
+import { AlertController, NavController, Platform, ToastController } from '@ionic/angular';import { map } from 'rxjs/operators';
+import { RegisterServiceService } from '../service/register-service.service';
 
 
 
 @Component({
-  selector: 'app-nfc',
-  templateUrl: './nfc.page.html',
-  styleUrls: ['./nfc.page.scss'],
+  selector: 'app-nfc-pinjam',
+  templateUrl: './nfc-pinjam.page.html',
+  styleUrls: ['./nfc-pinjam.page.scss'],
 })
-export class NfcPage implements OnInit {
+export class NfcPinjamPage implements OnInit {
+
 
   tagId: any = null;
+  tagCheck = false;
   //tagDesc: an
   bookForm: FormGroup;
+  bookStatus = true;
   isSubmitted = false;
+  bookLib: any;
+  bookCounter = 0;
 
   constructor(
     private nfc: NFC, 
@@ -37,12 +43,19 @@ export class NfcPage implements OnInit {
       });
     }
 
-  ngOnInit() {    
-    this.bookForm = this.formBuilder.group({
-    book_name: ['', [Validators.required, Validators.minLength(2)]],
-    rfid: ['', [Validators.required]],
+  ngOnInit() {  
+    this.rgsSrv.getAllBookLibrary().snapshotChanges().pipe(
+      map(changes =>
+          changes.map(c => ({key: c.payload.key, ...c.payload.val()}))
+      )
+    ).subscribe(data => {
+      this.bookLib = data;
+      console.log(this.bookLib);
+      console.log(this.bookLib.length);
+    }) 
+     this.bookForm = this.formBuilder.group({
+      rfid: ['', [Validators.required]]
     })
-
   }
 
   get errorControl() {
@@ -51,13 +64,23 @@ export class NfcPage implements OnInit {
 
   submitForm() {
     this.isSubmitted = true;
-    if (!this.bookForm.valid || this.tagId == null) {
+    console.log(this.bookForm.value.rfid);
+    for(let i = 0; i < this.bookLib.length; i++) {
+      if(this.bookForm.value.rfid == this.bookLib[i].rfid) {
+        this.tagCheck = true;
+        this.bookCounter = i;
+        break;
+      }
+    }
+    if (!this.bookForm.valid || this.tagId == null || this.tagCheck == false) {
+      this.bookStatus = false;
       console.log('Please provide all the required values!')
       return false;
     } else {
       console.log(this.bookForm.value)
-      this.bookForm.addControl('book_status', new FormControl(true, Validators.required));
-      this.rgsSrv.createBookLibrary(this.bookForm.value).then(res => {
+      this.bookForm.addControl('book_name', new FormControl(this.bookLib[this.bookCounter].book_name, Validators.required));
+      this.bookForm.addControl('userName', new FormControl(localStorage.getItem('name'), Validators.required));
+      this.rgsSrv.createBorrowUser(this.bookForm.value,localStorage.getItem('name')).then(res => {
         console.log(res);
         this.bookForm.reset();
         this.router.navigate(['/profile']);
@@ -67,6 +90,10 @@ export class NfcPage implements OnInit {
     }
   }
 
+  onChange() {
+    this.bookStatus = true;
+    this.submitForm();
+  }
 
   async checkNFC(){
     await this.nfc.enabled().then(() => {
@@ -135,4 +162,5 @@ export class NfcPage implements OnInit {
       this.cdr.detectChanges();
     });
   }
+
 }

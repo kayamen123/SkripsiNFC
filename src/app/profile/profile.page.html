@@ -1,0 +1,13 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>profile</ion-title>
+    <ion-buttons slot="primary">
+      <ion-button *ngIf="status" [routerLink]="['/nfc']">Input Book</ion-button>
+      <ion-button *ngIf="!status" [routerLink]="['/nfc-pinjam']">Pinjam Buku</ion-button>
+    </ion-buttons>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+
+</ion-content>

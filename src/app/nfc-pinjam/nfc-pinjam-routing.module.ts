@@ -1,12 +1,12 @@
 import { NgModule } from '@angular/core';
 import { Routes, RouterModule } from '@angular/router';
 
-import { NfcWritePage } from './nfc-write.page';
+import { NfcPinjamPage } from './nfc-pinjam.page';
 
 const routes: Routes = [
   {
     path: '',
-    component: NfcWritePage
+    component: NfcPinjamPage
   }
 ];
 
@@ -14,4 +14,4 @@ const routes: Routes = [
   imports: [RouterModule.forChild(routes)],
   exports: [RouterModule],
 })
-export class NfcWritePageRoutingModule {}
+export class NfcPinjamPageRoutingModule {}

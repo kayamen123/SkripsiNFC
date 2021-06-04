@@ -4,17 +4,31 @@
   </ion-toolbar>
 </ion-header>
 
-<ion-content padding>
-  <h1>Please Scan Access Card</h1>
-  <ion-card>
-    <ion-card-header>
-      Access Granted
-    </ion-card-header>
-    <ion-card-content>
-      <p>Account Tag ID: {{ tagId }}</p>
-    </ion-card-content>
-  </ion-card>
-  <ion-buttons>
-    <ion-button [routerLink]="['/nfc-write']">Write</ion-button>
-  </ion-buttons>
+<ion-content>
+  <form [formGroup]="bookForm" (ngSubmit)="submitForm()" novalidate>
+    <ion-item lines="full">
+      <ion-label position="floating">Book Name</ion-label>
+      <ion-input formControlName="book_name" type="text"></ion-input>
+    </ion-item>
+    <span style="color: red;" class="error ion-padding" *ngIf="isSubmitted && errorControl.book_name.errors?.required">
+      Name is required.
+    </span>
+    <span style="color: red;" class="error ion-padding" *ngIf="isSubmitted && errorControl.book_name.errors?.minlength">
+      Name should be min 2 chars long.
+    </span>
+
+    <ion-item lines="full">
+      <ion-label position="floating">RFID</ion-label>
+      <ion-input maxlength="10" formControlName="rfid" type="text" [value]="tagId" required></ion-input>
+    </ion-item>
+    <span style="color: red;" class="error ion-padding" *ngIf="isSubmitted && errorControl.rfid.errors?.required">
+      RFID is required.
+    </span>
+
+    <ion-row>
+      <ion-col>
+        <ion-button type="submit" color="danger" expand="block">Submit</ion-button>
+      </ion-col>
+    </ion-row>
+  </form>
 </ion-content>
