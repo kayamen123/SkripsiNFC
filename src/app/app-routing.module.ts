@@ -31,6 +31,10 @@ const routes: Routes = [
     path: 'nfc-pinjam',
     loadChildren: () => import('./nfc-pinjam/nfc-pinjam.module').then( m => m.NfcPinjamPageModule)
   },
+  {
+    path: 'nfc-pengembalian',
+    loadChildren: () => import('./nfc-pengembalian/nfc-pengembalian.module').then( m => m.NfcPengembalianPageModule)
+  },
 ];
 
 @NgModule({

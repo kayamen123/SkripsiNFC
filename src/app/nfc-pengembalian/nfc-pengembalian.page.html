@@ -1,0 +1,37 @@
+<ion-header>
+  <ion-toolbar>
+    <ion-title>Pengembalian</ion-title>
+  </ion-toolbar>
+</ion-header>
+
+<ion-content>
+  <form [formGroup]="bookForm" (ngSubmit)="presentAlert()" novalidate>
+
+    <ion-item lines="full">
+      <ion-label position="floating">Scan Your RFID to Borrow Book :</ion-label>
+      <ion-input maxlength="10" formControlName="rfid" type="text" (ionChange)="onChange()"  [value]="tagId" required disabled></ion-input>
+    </ion-item>
+
+    <span style="color: red;" class="error ion-padding" *ngIf="isSubmitted && errorControl.rfid.errors?.required">
+      RFID is required.
+    </span>
+
+    <span style="color: red;" class="error ion-padding" *ngIf="!bookCheck">
+      Book still in rack
+    </span>
+
+    <ion-item lines="full" *ngIf="dendaValid">
+      <ion-text color="danger">
+        <h4 >Berikut Denda Kamu : {{ 1000*diffDate }}</h4>
+      </ion-text>
+    </ion-item>
+
+
+    <ion-row>
+      <ion-col>
+        <ion-button type="submit" color="danger" expand="block">Return Book</ion-button>
+      </ion-col>
+    </ion-row>
+
+  </form>
+</ion-content>

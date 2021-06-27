@@ -4,20 +4,40 @@
   </ion-toolbar>
 </ion-header>
 <ion-content>
-  <form [formGroup]="bookForm" (ngSubmit)="submitForm()" novalidate>
+  <form [formGroup]="bookForm" (ngSubmit)="presentAlert()" novalidate>
 
     <ion-item lines="full">
       <ion-label position="floating">Scan Your RFID to Borrow Book :</ion-label>
-      <ion-input maxlength="10" formControlName="rfid" type="text" (ionChange)="onChange()"  [value]="tagId" required></ion-input>
+      <ion-input maxlength="10" formControlName="rfid" type="text" (ionChange)="onChange()"  [value]="tagId" required disabled></ion-input>
     </ion-item>
     <span style="color: red;" class="error ion-padding" *ngIf="isSubmitted && errorControl.rfid.errors?.required">
       RFID is required.
     </span>
 
-
-    <span style="color: red;" class="error ion-padding" *ngIf="!bookStatus">
+    <span style="color: red;" class="error ion-padding" *ngIf="!bookValidator">
       Book not in Data
     </span>
+
+    <span style="color: red;" class="error ion-padding" *ngIf="!bookCond">
+      Book currently not availble
+    </span>
+
+
+    <ion-card *ngIf="bookStatus">
+      <img class="book-img" [src]="photo">
+      <ion-card-header>
+        <ion-card-title>Madison, WI</ion-card-title>
+      </ion-card-header>
+      <ion-card-content>
+        Founded in 1829 on an isthmus between Lake Monona and Lake Mendota, Madison was named the capital of the Wisconsin Territory in 1836.
+      </ion-card-content>
+    </ion-card>
+
+    <ion-row>
+      <ion-col>
+        <ion-button type="submit" color="danger" expand="block">Borrow Book</ion-button>
+      </ion-col>
+    </ion-row>
 
   </form>
 </ion-content>

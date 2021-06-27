@@ -1,4 +1,4 @@
-<ion-header>
+<ion-header *ngIf="hideTab">
   <ion-toolbar>
     <ion-title>login</ion-title>
     <ion-buttons slot="start">
@@ -7,7 +7,7 @@
   </ion-toolbar>
 </ion-header>
 
-<ion-content>
+<ion-content *ngIf="hideTab">
   <form [formGroup]="loginForm" (ngSubmit)="submitForm()" novalidate>
     <ion-item lines="full">
       <ion-label position="floating">Name</ion-label>

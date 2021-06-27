@@ -80,6 +80,28 @@
       Password does not Same
     </span>
 
+
+    <ion-item>
+      <ion-card *ngIf="photo">
+        <ion-card-content>
+          <img class="profile-picture" [src]="photo">
+        </ion-card-content>
+      </ion-card>
+    </ion-item>
+  <ion-item>
+    <ion-button size="small" (click)="getPicture('camera')">
+      <ion-icon name="camera" slot="start"></ion-icon>
+      <ion-label>Camera</ion-label>
+    </ion-button>
+
+    <ion-button size="small" (click)="getPicture('gallery')">
+      <ion-icon name="image" slot="start"></ion-icon>
+      <ion-label>Gallery</ion-label>
+    </ion-button>
+
+    <input type="file" *ngIf="isDesktop" #filePicker (change)="onFileChoose($event)"/>
+  </ion-item>
+
     <ion-row>
       <ion-col>
         <ion-button type="submit" color="danger" expand="block">Submit</ion-button>
