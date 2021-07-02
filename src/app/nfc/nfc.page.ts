@@ -8,6 +8,7 @@ import { Camera, CameraResultType, CameraSource, Capacitor } from '@capacitor/co
 
 import { Ndef, NdefEvent, NFC } from '@ionic-native/nfc/ngx';
 import { AlertController, NavController, Platform, ToastController } from '@ionic/angular';
+import * as moment from 'moment';
 import { RegisterServiceService } from '../service/register-service.service';
 
 
@@ -23,12 +24,15 @@ export class NfcPage implements OnInit {
   tagId: any = null;
   myDate: any = null;
   record: any = null;
+  currentDate: any = null;
   //tagDesc: an
   bookForm: FormGroup;
+  bookForm2: FormGroup;
   recordMessage: any = null;
   isDesktop: boolean;
   isSubmitted = false;
   dataUrl: any = null;
+  momentjs: any = moment;
   photo: SafeResourceUrl = 'https://i.pinimg.com/originals/0c/3b/3a/0c3b3adb1a7530892e55ef36d3be6cb8.png';
   rfCount = 0;
 
@@ -53,16 +57,21 @@ export class NfcPage implements OnInit {
 
   ngOnInit() {    
     this.bookForm = this.formBuilder.group({
-    book_name: ['', [Validators.required, Validators.minLength(2)]],
-    rfid: ['', [Validators.required]],
-    date: ['', [Validators.required]],
-    description: ['', [Validators.required, Validators.minLength(10)]]
-    })
+      rfid: ['', [Validators.required]],
+      book_name: ['', [Validators.required, Validators.minLength(2)]],
+      date: ['', [Validators.required]],
+      description: ['', [Validators.required, Validators.minLength(10)]]
+    });
     this.isDesktop = false;
+    
     if((this.platform.is('mobile') && this.platform.is('hybrid')) || 
     this.platform.is('desktop')){
       this.isDesktop = true;
     }
+  }
+
+  onChange() {
+    this.myDate = this.momentjs().format("MMM Do YY");
   }
 
   ionViewDidEnter() {
@@ -77,12 +86,13 @@ export class NfcPage implements OnInit {
 
   submitForm() {
     this.isSubmitted = true;
-    if (!this.bookForm.valid || this.tagId == null) {
+    if (!this.bookForm.valid || this.tagId == null || this.rfCount == 0) {
+      this.nfcAlert();
       console.log('Please provide all the required values!')
       return false;
     } else {
       console.log(this.bookForm.value)
-      this.bookForm.addControl('book_status', new FormControl(true, Validators.required));
+      this.bookForm.addControl('imageUrl', new FormControl(this.photo, Validators.required));
       this.rgsSrv.createBookLibrary(this.bookForm.value, this.dataUrl).then(res => {
         console.log(res);
         this.upload(this.bookForm.value.book_name);
@@ -156,17 +166,31 @@ export class NfcPage implements OnInit {
         const task = ref.put(file);
   }
 
-  onChange() {
-    this.myDate = new Date().toLocaleDateString();
+  async nfcAlert() {
+    const alert = await this.alertCtrl.create({
+      header: 'Error',
+      message: 'Please insert Book Title and Description!',
+      buttons: [
+        {
+          text: 'Ok',
+          role: 'cancel'
+        }
+      ]
+    });
+    await alert.present();
   }
 
   async checkNFC(){
     await this.nfc.enabled().then(() => {
-     // this.addListenNFC();
-      this.nfc.addNdefListener().subscribe(
-       (tagEvent) => this.tagListenerSuccess(tagEvent),
-       (error) => console.log('error'));
-    //  this.nfc.addTagDiscoveredListener().subscribe((tagEvent) => this.tagWriterSuccess(tagEvent));
+     if(this.bookForm.value.book_name != null && this.bookForm.value.description != null) {
+         this.addListenNFC();    
+       /* this.nfc.addNdefListener().subscribe(
+          (tagEvent) => this.tagListenerSuccess(tagEvent),
+          (error) => console.log('error'));*/
+        //  this.nfc.addTagDiscoveredListener().subscribe((tagEvent) => this.tagWriterSuccess(tagEvent));
+     } else {
+        //this.nfcAlert();
+     }
     })
     .catch(async (err) => {
       let alert = await this.alertCtrl.create({
@@ -188,7 +212,7 @@ export class NfcPage implements OnInit {
     });
   }
 
-  async addListenNFC(){
+  async addListenNFC() {
     console.log('enter into a addListenNFC');
     this.tagId = "";
     //this.tagDesc = "";
@@ -212,10 +236,21 @@ export class NfcPage implements OnInit {
 
       this.tagId = "";
       //this.tagDesc = "";
-      this.rfCount += 1;
-
+      this.rfCount += 1;  
       let tagid = await this.nfc.bytesToHexString(event.tag.id);
       this.tagId = tagid;
+      var message = [
+        this.ndef.textRecord(this.bookForm.value.book_name),
+        this.ndef.textRecord(this.bookForm.value.date),
+        this.ndef.textRecord(this.bookForm.value.description),
+        this.ndef.uriRecord("http://github.com/chariotsolutions/phonegap-nfc")
+    ];
+    
+        // write to the tag
+        this.nfc.write(message).then(
+          _ => console.log('Wrote message to tag'),
+          error => console.log('Write failed', error)
+      )
       
 
       // if(event.tag.ndefMessage){
@@ -247,11 +282,9 @@ export class NfcPage implements OnInit {
       console.log("coucou");
       console.log(tagEvent);
       console.log(this.nfc.bytesToString(tagEvent.tag.ndefMessage[0].payload));
-      for(let i = 0; i < tagEvent.tag.ndefMessage[0].payload.length;i++) {
-        tagEvent.tag.ndefMessage[0].payload[i] = tagEvent.tag.ndefMessage[0].payload[i+3];
-      }
+      console.log(this.nfc.bytesToString(tagEvent.tag.ndefMessage[1].payload));
       this.record = this.nfc.bytesToString(tagEvent.tag.ndefMessage[0].payload).split('');
-      this.record.splice(tagEvent.tag.ndefMessage[0].payload.length-3,3);
+      this.record.splice(0,3);
       this.recordMessage = this.record.join("");
       console.log(this.record);
       console.log(this.recordMessage)
@@ -268,7 +301,7 @@ export class NfcPage implements OnInit {
       (await toast).present();
     } else {
       var message = [
-        this.ndef.textRecord("hello, world"),
+        this.ndef.textRecord(this.bookForm2.value.book_name),
         this.ndef.uriRecord("http://github.com/chariotsolutions/phonegap-nfc")
     ];
     

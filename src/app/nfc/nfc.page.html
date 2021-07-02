@@ -8,7 +8,7 @@
   <form [formGroup]="bookForm" (ngSubmit)="submitForm()" novalidate>
     <ion-item lines="full">
       <ion-label position="floating">Book Name</ion-label>
-      <ion-input formControlName="book_name" type="text"></ion-input>
+      <ion-input formControlName="book_name" type="text" (ionChange)="onChange()"></ion-input>
     </ion-item>
     <span style="color: red;" class="error ion-padding" *ngIf="isSubmitted && errorControl.book_name.errors?.required">
       Name is required.
@@ -58,7 +58,7 @@
   </ion-item>
 
   <ion-item lines="full">
-    <ion-input maxlength="10" formControlName="rfid" type="text" [value]="tagId" (ionChange)="onChange()"  required [hidden]="true"></ion-input>
+    <ion-input maxlength="10" formControlName="rfid" type="text" [value]="tagId" required [hidden]="true"></ion-input>
   </ion-item>
   <span style="color: red;" class="error ion-padding" *ngIf="isSubmitted && errorControl.rfid.errors?.required">
     RFID is required.

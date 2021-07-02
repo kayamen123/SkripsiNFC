@@ -11,29 +11,15 @@
 </ion-header>
 
 <ion-content>
-  <div *ngIf="historyStatus">
-    <ion-card *ngFor="let book of bookBorrow">
+    <ion-card *ngIf="historyStatus">
       <img class="profile-picture" [src]="photo">
       <ion-card-header>
-        <ion-card-subtitle>{{book.book_name}}</ion-card-subtitle>
-        <ion-card-title>Madison, WI</ion-card-title>
+        <ion-card-subtitle>{{bookName}}</ion-card-subtitle>
+        <ion-card-title>{{dateBook}}</ion-card-title>
       </ion-card-header>
       <ion-card-content>
-        Founded in 1829 on an isthmus between Lake Monona and Lake Mendota, Madison was named the capital of the Wisconsin Territory in 1836.
+        {{ descBook }}
       </ion-card-content>
+      <a href="{{linkBook}}">{{linkBook}}</a>
     </ion-card>
-  </div>
-
-  <div *ngIf="!historyStatus">
-    <ion-card>
-      <img class="profile-picture" [src]="photo">
-      <ion-card-header>
-        <ion-card-subtitle>Tidak Ada Buku Yang dipinjam</ion-card-subtitle>
-        <ion-card-title>Madison, WI</ion-card-title>
-      </ion-card-header>
-      <ion-card-content>
-        Founded in 1829 on an isthmus between Lake Monona and Lake Mendota, Madison was named the capital of the Wisconsin Territory in 1836.
-      </ion-card-content>
-    </ion-card>
-  </div>
 </ion-content>
