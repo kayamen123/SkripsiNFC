@@ -1,7 +1,6 @@
 import { ChangeDetectorRef, Component, HostListener, OnInit } from '@angular/core';
 import { SafeResourceUrl } from '@angular/platform-browser';
 import { Router } from '@angular/router';
-import { Ndef, NFC } from '@ionic-native/nfc/ngx';
 import { AlertController, LoadingController, Platform } from '@ionic/angular';
 import * as moment from 'moment';
 import { map } from 'rxjs/operators';
@@ -29,7 +28,6 @@ export class ProfilePage implements OnInit {
   historyStatus: boolean = false;
   momentjs: any = moment;
   constructor(
-    private nfc: NFC, 
     public rgsSrv: RegisterServiceService,
     private platform: Platform,
     private alertCtrl: AlertController,
@@ -37,9 +35,6 @@ export class ProfilePage implements OnInit {
     private router: Router,
     private loadingCtrl: LoadingController
   ) { 
-    this.platform.ready().then(()=>{
-      this.checkNFC();
-    });
   }
 
   ngOnInit() {
@@ -77,79 +72,16 @@ export class ProfilePage implements OnInit {
 
   }
 
-  async checkNFC(){
-    await this.nfc.enabled().then(() => {
-        this.nfc.addNdefListener().subscribe(
-          async (tagEvent) => {
-            this.tagListenerSuccess(tagEvent);
-            this.onChange();        
-            console.log(this.historyStatus);
-            this.cdr.detectChanges();
-          });
-        //  this.nfc.addTagDiscoveredListener().subscribe((tagEvent) => this.tagWriterSuccess(tagEvent));
-    })
-    .catch(async (err) => {
-      let alert = await this.alertCtrl.create({
-        subHeader: 'NFC_DISABLE_ON_PHONE',
-        buttons: [
-          {
-            text: 'OK',
-            role: 'cancel',
-          },
-          {
-            text: 'GO_SETTING',
-            handler: () => {
-              this.nfc.showSettings();
-            }
-          }
-        ]
-      });
-       return await alert.present();
-    });
-  }
-
-  tagListenerSuccess(tagEvent) {
-    console.log("coucou");
-    console.log(tagEvent);
-    let nfcBookName = this.nfc.bytesToString(tagEvent.tag.ndefMessage[0].payload).split('');
-    nfcBookName.splice(0,3);
-    this.bookName = nfcBookName.join("");
-
-    let nfcBookDate = this.nfc.bytesToString(tagEvent.tag.ndefMessage[1].payload).split('');
-    nfcBookDate.splice(0,3);
-    this.dateBook = nfcBookDate.join("");
-
-    let nfcBookDesc = this.nfc.bytesToString(tagEvent.tag.ndefMessage[2].payload).split('');
-    nfcBookDesc.splice(0,3);
-    this.descBook = nfcBookDesc.join("");
-
-    let nfcBookLink = this.nfc.bytesToString(tagEvent.tag.ndefMessage[3].payload).split('');
-    nfcBookLink.splice(0,3);
-    this.linkBook = nfcBookLink.join("");
-    console.log(this.bookName);
-
-    
-}
-
-onChange(){
-  this.historyStatus = true;
-}
-
-  async presentLoading() {
-    const loading = await this.loadingCtrl.create({
-      spinner: 'circles',
-      message: 'Please wait...',
-      duration: 5000
-    });
-    await loading.present();
-
-
-    const { role, data } = await loading.onDidDismiss();
-  }
   ionViewDidEnter() {
     this.platform.backButton.subscribeWithPriority(10, () => {
       this.backButtonAlert();
     })
+  }
+  nfc() {
+    this.router.navigate(['/nfc']);
+  }
+  nfcpinjam() {
+    this.router.navigate(['/nfc-pinjam']);
   }
 
   perpanjang(){

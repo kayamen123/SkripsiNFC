@@ -5,6 +5,7 @@ import { UserLibrary } from '../model/userLibrary';
 import { BorrowLibrary } from '../model/borrowLibrary';
 import { SafeResourceUrl } from '@angular/platform-browser';
 import { HistoryLibrary } from '../model/historyLibrary';
+import { WordLibrary } from '../model/wordLibrary';
 
 
 @Injectable({
@@ -14,18 +15,26 @@ export class RegisterServiceService {
 
   private dbPath = '/userlibrary';
   private dbPath2 = '/booklibrary';
+  private dbPath3 = '/Dictionary/0';
   userLibraryRef: AngularFireList<UserLibrary> = null;
   bookLibraryRef: AngularFireList<BookLibrary> = null;
   borrowLibraryRef: AngularFireList<BorrowLibrary> = null;
   historyLibraryRef: AngularFireList<HistoryLibrary> = null;
-
+  wordLibraryRef: AngularFireList<WordLibrary[]> = null;
+  
   constructor(private db: AngularFireDatabase) { 
     this.userLibraryRef = db.list(this.dbPath);
     this.bookLibraryRef = db.list(this.dbPath2);
+    // this.wordLibraryRef = db.list(this.dbPath3);
   }
 
   getAllUserLibrary(): AngularFireList<UserLibrary> {
     return this.userLibraryRef;
+  }
+
+  getDictionary(tagId: any): AngularFireList<WordLibrary[]>{
+    this.wordLibraryRef = this.db.list('/Dictionary/'+tagId);
+    return this.wordLibraryRef;
   }
 
   getAllBookLibrary(): AngularFireList<BookLibrary> {
@@ -52,6 +61,11 @@ export class RegisterServiceService {
     console.log('service RFID:', rfid);
     this.borrowLibraryRef = this.db.list('/borrowBook/'+rfid);
     return this.borrowLibraryRef.push(bookLib);
+  }
+
+  createDictionaryBook(wordLib: WordLibrary[], tagId: any): any {
+    this.wordLibraryRef = this.db.list('/Dictionary/'+tagId);
+    return this.wordLibraryRef.push(wordLib);
   }
 
   createHistoryBook(bookLib: HistoryLibrary, userName: any): any {

@@ -5,6 +5,9 @@ import { DomSanitizer, SafeResourceUrl } from '@angular/platform-browser';
 import { Router } from '@angular/router';
 import { Camera, CameraResultType, CameraSource, Capacitor } from '@capacitor/core';
 import { AlertController, LoadingController, Platform, ToastController } from '@ionic/angular';
+import { map } from 'rxjs/operators';
+import { WordLibrary } from '../model/wordLibrary';
+
 import { RegisterServiceService } from '../service/register-service.service';
 
 @Component({
@@ -17,7 +20,22 @@ export class RegisterPage implements OnInit {
   registerForm: FormGroup;
   isSubmitted = false;
   passConf = true;
+  test = '16';
+  asciiValue = 255;
+  pValue: string;
+  cValue: string;
+  string_join = '';
+  hasil: string[] = [];
+  hasil2: string[] = [];
   isDesktop: boolean;
+  asciiNum: number;
+  trust = false;
+  dictionary: WordLibrary[] = [];
+  dictionary1: WordLibrary[] = []
+  wordLib: WordLibrary[];
+  word = 'Goblog Banget Anjing';
+  compress: string[];
+  word_split: string[];
   dataUrl: any;
   photo: SafeResourceUrl = 'https://i.pinimg.com/originals/0c/3b/3a/0c3b3adb1a7530892e55ef36d3be6cb8.png';
   constructor(
@@ -46,7 +64,145 @@ export class RegisterPage implements OnInit {
     this.platform.is('desktop')){
       this.isDesktop = true;
     }
+    this.word_split = this.word.split('');
+    const ascii = this.test.charCodeAt(1);
+    const number = parseInt(this.test);
+    const ascii1 = this.word_split[1].charCodeAt(0);
+    console.log(this.test);
+    console.log(this.word_split);
+    const array: WordLibrary[] = [
+      {
+        key: null,
+        id: ascii,
+        name: this.word_split[0],
+      },     
+      {
+        key: null,
+        id: ascii1,
+        name: this.word_split[1]
+      }]
+    console.log(array);
+    console.log("Nama : "+this.word);
+    console.log('length kata: '+this.word_split.length);
+    console.log("Ascii Spasi:"+number);
+    for(let i = 0; i < this.word_split.length; i++) {
+      if(this.dictionary.length == 0) {
+        this.asciiNum = 1;
+        const array: WordLibrary[] = [
+          {
+            key: null,
+            id: this.word_split[i].charCodeAt(0),
+            name: this.word_split[i]
+          }]
+        this.dictionary.push(array[0])
+      } else {
+        for(let f = 0; f < this.dictionary.length;f++) {
+           if(this.dictionary[f].name == this.word_split[i]) {
+             this.trust = true;
+              break;
+           }
+        }
+        if (!this.trust) {
+          this.asciiNum += 1;
+          const array1: WordLibrary[] = [
+            {
+              key: null,
+              id: this.word_split[i].charCodeAt(0),
+              name: this.word_split[i]
+            }]
+            this.dictionary.push(array1[0]);
+        }
+        this.trust = false;
+      }
+    }
+    this.trust = false;
+    console.log(this.dictionary.sort(this.compare));
+    this.dictionary1 = this.dictionary.sort(this.compare);
+    console.log(this.word_split)
+    for(let i = 0; i < this.word_split.length; i++) {
+      if(i == 0) {
+        this.pValue = this.word_split[i];
+        console.log(this.pValue);
+        for(let v = 0; v < this.dictionary1.length; v++) {
+          console.log(this.dictionary1[v].name);
+          if (this.pValue == this.dictionary1[v].name) {
+            break;
+          }
+        }
+      } else {
+        this.cValue = this.word_split[i];
+        const valueJoin = this.pValue.concat(this.cValue);
+        console.log(valueJoin);
+        for(let v = 0; v < this.dictionary1.length; v++) {
+          if(valueJoin == this.dictionary1[v].name) {
+            this.pValue = valueJoin;
+            this.trust = true;
+            break
+          } 
+        }
+        if(!this.trust) {
+          this.asciiValue += 1;
+          const array6: WordLibrary[] = [
+            {
+              key: null,
+              id: this.asciiValue,
+              name: valueJoin
+            }]
+          console.log(this.pValue);
+          this.dictionary1.push(array6[0]);
+          for(let d = 0; d < this.dictionary1.length; d++) {
+            if(this.pValue == this.dictionary1[d].name) {
+              this.hasil.push(''+this.dictionary1[d].id);
+              break
+            }
+          } 
+        }
+        if (this.trust) {
+          console.log(this.pValue);
+        } else {
+          this.pValue = this.cValue;
+        }
+        this.trust = false;
+      }
+    }
+    console.log(this.hasil);
+    console.log(this.dictionary1);
+    this.hasil.push(''+this.word_split[this.word_split.length-1].charCodeAt(0));
+    const hasil_test = this.hasil.join(",")
+    console.log('Hasil Akhir : '+hasil_test);
+    for(let j = 0; j < hasil_test.length; j++) {
+      if(hasil_test[j] == ",") {
+        this.hasil2.push(this.string_join);
+        this.string_join = "";
+      } else {
+        if(this.string_join.length == 0) {
+          this.string_join = hasil_test[j];
+        } else {
+          this.string_join = this.string_join.concat(hasil_test[j]);
+        }
+      }
+    }
+    console.log('hasil test : '+this.hasil2[0]);
+    console.log(this.dictionary);
+    // this.dictionary.push(array[0]);
+    // this.dictionary.push(array[1]);
+    /*this.rgsSrv.getDictionary().snapshotChanges().pipe(
+      map(changes =>
+          changes.map(c => ({key: c.payload.key, ...c.payload.val()}))
+      )
+    ).subscribe(data => {
+      this.wordLib = data[0];
+      console.log(data)   
+      console.log('Kata yang telah di split : '+this.wordLib[0].name);    
+      console.log('Kata yang telah di split : '+this.dictionary[1].name);
+      console.log('kata ascii: '+this.wordLib[0].id);
+      console.log('kata ascii: '+this.dictionary[1].id);
+      console.log('length kata: '+this.word.length);
+    })*/
+
   }
+
+  
 
   ionViewDidEnter() {
     this.platform.backButton.subscribeWithPriority(10, () => {
@@ -56,6 +212,16 @@ export class RegisterPage implements OnInit {
 
   get errorControl() {
     return this.registerForm.controls;
+  }
+
+  compare( a, b ) {
+    if ( a.name < b.name ){
+      return -1;
+    }
+    if ( a.name > b.name ){
+      return 1;
+    }
+    return 0;
   }
 
   submitForm() {

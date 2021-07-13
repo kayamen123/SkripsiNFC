@@ -11,9 +11,10 @@ import { RegisterServiceService } from '../service/register-service.service';
 
 import * as moment from 'moment-timezone';
 import { SafeResourceUrl } from '@angular/platform-browser';
+import { Plugins } from '@capacitor/core';
 
 
-
+const { Browser } = Plugins;
 @Component({
   selector: 'app-nfc-pinjam',
   templateUrl: './nfc-pinjam.page.html',
@@ -33,7 +34,12 @@ export class NfcPinjamPage implements OnInit {
   bookStatus = false;
   bookCond = true;
   isSubmitted = false;
+  historyStatus = false;
   bookLib: any;
+  dateBook: any;
+  bookName: any;
+  linkBook: any;
+  descBook: any;
   bookCounter = 0;
   momentjs: any = moment;
   photo: SafeResourceUrl = 'https://i.pinimg.com/originals/0c/3b/3a/0c3b3adb1a7530892e55ef36d3be6cb8.png';
@@ -50,6 +56,18 @@ export class NfcPinjamPage implements OnInit {
     public rgsSrv: RegisterServiceService,
     public router: Router,
     ) { 
+      Browser.addListener('browserPageLoaded',() => {
+        console.log('browserPageLoaded event called');
+      });
+  
+      Browser.addListener('browserFinished', () => {
+        console.log('browserFinished event called');
+      });
+      
+      Browser.prefetch({
+        urls: ['https://'+this.linkBook]
+      })
+
       this.platform.ready().then(()=>{
         this.checkNFC();
       });
@@ -70,166 +88,80 @@ export class NfcPinjamPage implements OnInit {
     })
   }
 
-  ionViewDidEnter() {
-    this.platform.backButton.subscribeWithPriority(10, () => {
+  IonViewDidEnter() {
+    this.platform.backButton.subscribeWithPriority(15, () => {
       this.router.navigate(['/profile']);
     })
   }
 
-  get errorControl() {
-    return this.bookForm.controls;
-  }
+  async OpenBrowser() {
+    await Browser.open({toolbarColor:"#f4dc41", url: 'https://'+this.linkBook});
+ }
 
-  submitForm() {
-    this.isSubmitted = true;
-    console.log(this.bookForm.value.rfid);
-    if (!this.bookForm.valid || this.tagId == null || this.tagCheck == false) {
-      this.bookValidator = false;
-      console.log('Please provide all the required values!')
-      return false;
-    } else {
-      console.log(this.bookForm.value)
-      this.currentDate = this.momentjs().format("MMM Do YY");   
-      this.validDate = this.momentjs().add(3, 'days').format("MMM Do YY");  
-      this.bookForm.addControl('book_name', new FormControl(this.bookInfo.book_name, Validators.required));
-      this.bookForm.addControl('userName', new FormControl(localStorage.getItem('name'), Validators.required));
-      this.bookForm.addControl('borrow_date', new FormControl(this.currentDate, Validators.required));
-      this.bookForm.addControl('valid_date', new FormControl(this.validDate, Validators.required));
-      this.rgsSrv.createBorrowUser(this.bookForm.value,localStorage.getItem('name')).then(res => {
-        console.log(res);
-        this.rgsSrv.createBorrowBook(this.bookForm.value,this.bookForm.value.rfid).then(res => {
-          console.log(res);
-          this.bookInfo.book_status = false;        
-          this.rgsSrv.updateStatusBook2(this.bookInfo.key,this.bookInfo).then(res => {
-            console.log(res);
-            this.bookForm.reset();
-            this.router.navigate(['/profile']);
-          }).catch(error => console.log(error));
-        }).catch(error => console.log(error));
-      }).catch(error => console.log(error));
-    }
-  }
-
-  onChange() {
-    this.bookValidator = true;
-    this.bookCond = true;
-    this.tagCheck = false;
-    this.bookStatus = false;
-    console.log(this.bookLib.length);
-    console.log(this.bookForm.value.rfid)
-    for(let i = 0; i < this.bookLib.length; i++) {
-      if(this.bookForm.value.rfid == this.bookLib[i].rfid) {
-        this.tagCheck = true;
-        if(this.bookLib[i].book_status == false){
-          this.bookCond = false;
-          break;
-        } else {
-          // this.tagCheck = true;
-          this.bookStatus = true;
-          this.bookInfo = this.bookLib[i];
-          this.photo = this.bookLib[i].imageUrl
-          break;
-        }
-      }
-    }
-    if(this.tagCheck == true) {
-      console.log(this.bookInfo.book_name);
-    } else {
-      console.log("masuk");
-      this.bookValidator = false;
-    } 
-  }
-
-  async presentAlert() {
-    const alert = await this.alertCtrl.create({
-      header: 'Borrow Book',
-      message: 'Are you sure want to borrow this Book?',
+ async checkNFC(){
+  await this.nfc.enabled().then(() => {
+      this.addListenNFC();
+      //  this.nfc.addTagDiscoveredListener().subscribe((tagEvent) => this.tagWriterSuccess(tagEvent));
+  })
+  .catch(async (err) => {
+    let alert = await this.alertCtrl.create({
+      subHeader: 'NFC_DISABLE_ON_PHONE',
       buttons: [
         {
-          text: 'Cancel',
-          role: 'cancel'
+          text: 'OK',
+          role: 'cancel',
         },
         {
-          text: 'Borrow',
-          handler: () => this.submitForm()
+          text: 'GO_SETTING',
+          handler: () => {
+            this.nfc.showSettings();
+          }
         }
       ]
     });
-    await alert.present();
-  }
-
-  tagListenerSuccess(tagEvent) {
-    console.log("coucou");
-    this.photo = this.nfc.bytesToString(tagEvent.tag.ndefMessage[0].payload);
-    this.bookStatus = true;
-    console.log(this.photo);
+     return await alert.present();
+  });
 }
-
-  async checkNFC(){
-    await this.nfc.enabled().then(() => {
-      this.addListenNFC();
-    })
-    .catch(async (err) => {
-      let alert = await this.alertCtrl.create({
-        subHeader: 'NFC_DISABLE_ON_PHONE',
-        buttons: [
-          {
-            text: 'OK',
-            role: 'cancel',
-          },
-          {
-            text: 'GO_SETTING',
-            handler: () => {
-              this.nfc.showSettings();
-            }
-          }
-        ]
-      });
-       return await alert.present();
-    });
-  }
 
   async addListenNFC(){
     console.log('enter into a addListenNFC');
-    this.tagId = "";
     //this.tagDesc = "";
 
-    this.nfc.addTagDiscoveredListener(() => {
+    this.nfc.addNdefListener(() => {
       console.log('successfully attached ndef listener');
     }, async (err) => {
       console.log('error attaching ndef listener', err);
 
-      let toast = this.toastCtrl.create({
-        message: err,
-        duration: 1000,
-        position: 'bottom'
-      });
-
-      return (await toast).present();
-
     }).subscribe(async (event) => {
-      console.log('received ndef message. the tag contains: ', event);
-      console.log('decode tag id', this.nfc.bytesToHexString(event.tag.id));
-
-      this.tagId = "";
-      //this.tagDesc = "";
-
-      let tagid = await this.nfc.bytesToHexString(event.tag.id);
-      this.tagId = tagid;
-
-      // if(event.tag.ndefMessage){
-      //   let payload = event.tag.ndefMessage[0].payload;
-      //   let tagContent = await this.nfc.bytesToString(payload).substring(3);
-      //   this.tagDesc = tagContent;
-      // }
-
-      let toast = this.toastCtrl.create({
-        message: this.nfc.bytesToHexString(event.tag.id),
-        duration: 5000,
-        position: 'bottom'
-      });
-      (await toast).present();
+      this.tagListenerSuccess(event);
+      this.onChange();        
+      console.log(this.historyStatus);
       this.cdr.detectChanges();
     });
+  }
+
+  tagListenerSuccess(tagEvent) {
+    console.log("coucou");
+    console.log(tagEvent);
+    let nfcBookName = this.nfc.bytesToString(tagEvent.tag.ndefMessage[0].payload).split('');
+    nfcBookName.splice(0,3);
+    this.bookName = nfcBookName.join("");
+
+    let nfcBookDate = this.nfc.bytesToString(tagEvent.tag.ndefMessage[1].payload).split('');
+    nfcBookDate.splice(0,3);
+    this.dateBook = nfcBookDate.join("");
+
+    let nfcBookDesc = this.nfc.bytesToString(tagEvent.tag.ndefMessage[2].payload).split('');
+    nfcBookDesc.splice(0,3);
+    this.descBook = nfcBookDesc.join("");
+
+    let nfcBookLink = this.nfc.bytesToString(tagEvent.tag.ndefMessage[3].payload).split('');
+    nfcBookLink.splice(0,1);
+    this.linkBook = nfcBookLink.join("");
+    console.log(this.bookName);
+  }
+
+  onChange(){
+    this.historyStatus = true;
   }
 }

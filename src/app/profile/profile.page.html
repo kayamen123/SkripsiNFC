@@ -2,8 +2,8 @@
   <ion-toolbar>
     <ion-title>profile</ion-title>
     <ion-buttons slot="primary">
-      <ion-button *ngIf="status" [routerLink]="['/nfc']">Input Book</ion-button>
-      <ion-button *ngIf="status" [routerLink]="['/nfc-pengembalian']">Pengembalian Buku</ion-button>
+      <ion-button *ngIf="status" (click)="nfc()">Input Book</ion-button>
+      <ion-button *ngIf="status" (click)="nfcpinjam()">Pengembalian Buku</ion-button>
       <ion-button *ngIf="!status" [routerLink]="['/nfc-pinjam']">Pinjam Buku</ion-button>
       <ion-button (click)="logout()">Logout</ion-button>
     </ion-buttons>
@@ -11,15 +11,5 @@
 </ion-header>
 
 <ion-content>
-    <ion-card *ngIf="historyStatus">
-      <img class="profile-picture" [src]="photo">
-      <ion-card-header>
-        <ion-card-subtitle>{{bookName}}</ion-card-subtitle>
-        <ion-card-title>{{dateBook}}</ion-card-title>
-      </ion-card-header>
-      <ion-card-content>
-        {{ descBook }}
-      </ion-card-content>
-      <a href="{{linkBook}}">{{linkBook}}</a>
-    </ion-card>
+
 </ion-content>

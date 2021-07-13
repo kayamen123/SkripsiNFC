@@ -9,6 +9,7 @@ import { Camera, CameraResultType, CameraSource, Capacitor } from '@capacitor/co
 import { Ndef, NdefEvent, NFC } from '@ionic-native/nfc/ngx';
 import { AlertController, NavController, Platform, ToastController } from '@ionic/angular';
 import * as moment from 'moment';
+import { WordLibrary } from '../model/wordLibrary';
 import { RegisterServiceService } from '../service/register-service.service';
 
 
@@ -35,6 +36,22 @@ export class NfcPage implements OnInit {
   momentjs: any = moment;
   photo: SafeResourceUrl = 'https://i.pinimg.com/originals/0c/3b/3a/0c3b3adb1a7530892e55ef36d3be6cb8.png';
   rfCount = 0;
+  test = '16';
+  asciiValue = 255;
+  pValue: string;
+  cValue: string;
+  hasil: string[] = [];
+  hasil2: string[] = [];
+  asciiNum: number;
+  trust = false;
+  dictionary: WordLibrary[] = [];
+  dictionary1: WordLibrary[] = [];
+  dictionary2: WordLibrary[] = [];
+  dictionary3: WordLibrary[] = []
+  wordLib: WordLibrary[];
+  word = '';
+  compress: string[];
+  word_split: string[];
 
   constructor(
     private nfc: NFC, 
@@ -51,7 +68,8 @@ export class NfcPage implements OnInit {
     private platform: Platform,
     ) { 
       this.platform.ready().then(()=>{
-        this.checkNFC();
+        this.cdr.detectChanges();
+        this.writeNFC();
       });
     }
 
@@ -74,8 +92,8 @@ export class NfcPage implements OnInit {
     this.myDate = this.momentjs().format("MMM Do YY");
   }
 
-  ionViewDidEnter() {
-    this.platform.backButton.subscribeWithPriority(10, () => {
+  IonViewDidEnter() {
+    this.platform.backButton.subscribeWithPriority(15, () => {
       this.router.navigate(['/profile']);
     })
   }
@@ -95,7 +113,7 @@ export class NfcPage implements OnInit {
       this.bookForm.addControl('imageUrl', new FormControl(this.photo, Validators.required));
       this.rgsSrv.createBookLibrary(this.bookForm.value, this.dataUrl).then(res => {
         console.log(res);
-        this.upload(this.bookForm.value.book_name);
+       // this.upload(this.bookForm.value.book_name);
         this.bookForm.reset();
         this.router.navigate(['/profile']);
       }).catch(error => console.log(error));
@@ -120,6 +138,17 @@ export class NfcPage implements OnInit {
     console.log(this.dataUrl);
     this.photo = this.sanitizer.bypassSecurityTrustResourceUrl(image && (image.dataUrl));
     console.log('Photo1:'+this.photo)
+  }
+  
+
+  compare( a, b ) {
+    if ( a.name < b.name ){
+      return -1;
+    }
+    if ( a.name > b.name ){
+      return 1;
+    }
+    return 0;
   }
   
   onFileChoose(event: Event){
@@ -180,7 +209,8 @@ export class NfcPage implements OnInit {
     await alert.present();
   }
 
-  async checkNFC(){
+  async writeNFC(){
+    this.cdr.detectChanges();
     await this.nfc.enabled().then(() => {
      if(this.bookForm.value.book_name != null && this.bookForm.value.description != null) {
          this.addListenNFC();    
@@ -188,8 +218,6 @@ export class NfcPage implements OnInit {
           (tagEvent) => this.tagListenerSuccess(tagEvent),
           (error) => console.log('error'));*/
         //  this.nfc.addTagDiscoveredListener().subscribe((tagEvent) => this.tagWriterSuccess(tagEvent));
-     } else {
-        //this.nfcAlert();
      }
     })
     .catch(async (err) => {
@@ -239,10 +267,164 @@ export class NfcPage implements OnInit {
       this.rfCount += 1;  
       let tagid = await this.nfc.bytesToHexString(event.tag.id);
       this.tagId = tagid;
-      var message = [
-        this.ndef.textRecord(this.bookForm.value.book_name),
+      for(let x = 0; x < 2; x++) {
+        if(x == 0) {
+          this.word = this.bookForm.value.book_name
+        } else {
+          this.word = this.bookForm.value.description
+        }
+        this.word_split = this.word.split('');
+        for(let i = 0; i < this.word_split.length; i++) {
+          if(this.dictionary.length == 0 || this.dictionary2.length == 0) {
+            this.asciiNum = 1;
+            const array: WordLibrary[] = [
+              {
+                key: null,
+                id: this.word_split[i].charCodeAt(0),
+                name: this.word_split[i]
+              }]
+            if(x == 0) {
+              this.dictionary.push(array[0])
+            } else {
+              this.dictionary2.push(array[0]);
+            }
+            
+          } else {
+            for(let f = 0; f < this.dictionary.length;f++) {
+              if(x == 0) {
+                if(this.dictionary[f].name == this.word_split[i]) {
+                  this.trust = true;
+                    break;
+                }
+              } else {
+                if(this.dictionary2[f].name == this.word_split[i]) {
+                  this.trust = true;
+                    break;
+                }
+              }
+            }
+            if (!this.trust) {
+              this.asciiNum += 1;
+              const array1: WordLibrary[] = [
+                {
+                  key: null,
+                  id: this.word_split[i].charCodeAt(0),
+                  name: this.word_split[i]
+                }]
+                if(x == 0) {
+                  this.dictionary.push(array1[0]);
+                } else {
+                  this.dictionary2.push(array1[0]);
+                }
+            }
+            this.trust = false;
+          }
+        }
+        this.trust = false;
+        if(x == 0) {
+          this.dictionary1 = this.dictionary.sort(this.compare);
+          for(let i = 0; i < this.word_split.length; i++) {
+            if(i == 0) {
+              this.pValue = this.word_split[i];
+              console.log(this.pValue);
+              for(let v = 0; v < this.dictionary1.length; v++) {
+                console.log(this.dictionary1[v].name);
+                if (this.pValue == this.dictionary1[v].name) {
+                  break;
+                }
+              }
+            } else {
+              this.cValue = this.word_split[i];
+              const valueJoin = this.pValue.concat(this.cValue);
+              console.log(valueJoin);
+              for(let v = 0; v < this.dictionary1.length; v++) {
+                if(valueJoin == this.dictionary1[v].name) {
+                  this.pValue = valueJoin;
+                  this.trust = true;
+                  break
+                } 
+              }
+              if(!this.trust) {
+                this.asciiValue += 1;
+                const array6: WordLibrary[] = [
+                  {
+                    key: null,
+                    id: this.asciiValue,
+                    name: valueJoin
+                  }]
+                console.log(this.pValue);
+                this.dictionary1.push(array6[0]);
+                for(let d = 0; d < this.dictionary1.length; d++) {
+                  if(this.pValue == this.dictionary1[d].name) {
+                    this.hasil.push(''+this.dictionary1[d].id);
+                    break
+                  }
+                } 
+              }
+              if (this.trust) {
+                console.log(this.pValue);
+              } else {
+                this.pValue = this.cValue;
+              }
+              this.trust = false;
+            }
+          }
+        } else {        
+          this.dictionary3 = this.dictionary2.sort(this.compare); 
+          for(let i = 0; i < this.word_split.length; i++) {
+            if(i == 0) {
+              this.pValue = this.word_split[i];
+              console.log(this.pValue);
+              for(let v = 0; v < this.dictionary3.length; v++) {
+                console.log(this.dictionary3[v].name);
+                if (this.pValue == this.dictionary3[v].name) {
+                  break;
+                }
+              }
+            } else {
+              this.cValue = this.word_split[i];
+              const valueJoin = this.pValue.concat(this.cValue);
+              console.log(valueJoin);
+              for(let v = 0; v < this.dictionary3.length; v++) {
+                if(valueJoin == this.dictionary3[v].name) {
+                  this.pValue = valueJoin;
+                  this.trust = true;
+                  break
+                } 
+              }
+              if(!this.trust) {
+                this.asciiValue += 1;
+                const array6: WordLibrary[] = [
+                  {
+                    key: null,
+                    id: this.asciiValue,
+                    name: valueJoin
+                  }]
+                console.log(this.pValue);
+                this.dictionary3.push(array6[0]);
+                for(let d = 0; d < this.dictionary3.length; d++) {
+                  if(this.pValue == this.dictionary3[d].name) {
+                    this.hasil2.push(''+this.dictionary3[d].id);
+                    break
+                  }
+                } 
+              }
+              if (this.trust) {
+                console.log(this.pValue);
+              } else {
+                this.pValue = this.cValue;
+              }
+              this.trust = false;
+            }
+          }
+        }
+      }
+      console.log('Hasil BookName: '+this.hasil);
+      console.log('Hasil Description: '+this.hasil2);
+ /*     var message = [
+        this.ndef.textRecord( this.hasil.join(",")),
         this.ndef.textRecord(this.bookForm.value.date),
-        this.ndef.textRecord(this.bookForm.value.description),
+        this.ndef.textRecord( this.hasil2.join(",")),
         this.ndef.uriRecord("http://github.com/chariotsolutions/phonegap-nfc")
     ];
     
@@ -250,7 +432,7 @@ export class NfcPage implements OnInit {
         this.nfc.write(message).then(
           _ => console.log('Wrote message to tag'),
           error => console.log('Write failed', error)
-      )
+      )*/
       
 
       // if(event.tag.ndefMessage){
@@ -276,40 +458,5 @@ export class NfcPage implements OnInit {
       this.cdr.detectChanges();
     }
     });
-  }
-
-  tagListenerSuccess(tagEvent) {
-      console.log("coucou");
-      console.log(tagEvent);
-      console.log(this.nfc.bytesToString(tagEvent.tag.ndefMessage[0].payload));
-      console.log(this.nfc.bytesToString(tagEvent.tag.ndefMessage[1].payload));
-      this.record = this.nfc.bytesToString(tagEvent.tag.ndefMessage[0].payload).split('');
-      this.record.splice(0,3);
-      this.recordMessage = this.record.join("");
-      console.log(this.record);
-      console.log(this.recordMessage)
-      console.log(tagEvent);
-  }
-
- async tagWriterSuccess(tagEvent) {
-    if(this.dataUrl == null) {
-      let toast = this.toastCtrl.create({
-        message: 'need Data URL to Complete it',
-        duration: 5000,
-        position: 'bottom'
-      });
-      (await toast).present();
-    } else {
-      var message = [
-        this.ndef.textRecord(this.bookForm2.value.book_name),
-        this.ndef.uriRecord("http://github.com/chariotsolutions/phonegap-nfc")
-    ];
-    
-        // write to the tag
-        this.nfc.write(message).then(
-          _ => console.log('Wrote message to tag'),
-          error => console.log('Write failed', error)
-      )
-    }
   }
 }
