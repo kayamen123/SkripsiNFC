@@ -82,6 +82,11 @@ export class NfcPengembalianPage implements OnInit {
     })
   }
 
+  logout(){
+    localStorage.clear();
+    this.router.navigate(['/login']);
+  }
+
   submitForm() {
     this.isSubmitted = true;
     console.log(this.bookForm.value.rfid);

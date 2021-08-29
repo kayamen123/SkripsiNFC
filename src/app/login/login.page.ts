@@ -17,6 +17,7 @@ export class LoginPage implements OnInit {
   passConf = true;
   hideTab = false;
   isSubmitted = false;
+  name: string = '';
 
   constructor(
     private rgsSrv: RegisterServiceService,
@@ -36,9 +37,21 @@ export class LoginPage implements OnInit {
   }
 
   ionViewDidEnter() {
-   this.platform.backButton.subscribeWithPriority(10, () => {
+   this.platform.backButton.subscribeWithPriority(15, () => {
       this.backButtonAlert();
     })
+    this.hideTab = false;
+    this.presentLoading();
+    this.loginForm = this.formBuilder.group({
+      name: ['', [Validators.required, Validators.minLength(2)]],
+      password: ['', [Validators.required, Validators.minLength(8)]]
+    })
+    this.name = localStorage.getItem('name');
+    console.log(this.name);
+    if(this.name != null) {
+      console.log("Masuk Local");
+      this.router.navigate(['/profile']);
+    }
   }
 
   async presentLoading() {
@@ -82,7 +95,10 @@ export class LoginPage implements OnInit {
             localStorage.setItem('name',this.userLib[i].name);
             localStorage.setItem('roles',this.userLib[i].role);
             localStorage.setItem('imageUrl',this.userLib[i].imageUrl);
+            localStorage.setItem('phone',this.userLib[i].mobile_phone);
+            localStorage.setItem('email',this.userLib[i].email);
             this.loginForm.reset();
+            this.isSubmitted = false;
             this.router.navigate(['/profile']);
           } 
         }

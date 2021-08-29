@@ -1,13 +1,15 @@
-<ion-header *ngIf="hideTab">
-  <ion-toolbar>
-    <ion-title>login</ion-title>
-    <ion-buttons slot="start">
-      <ion-back-button defaultHref="/regis"></ion-back-button>
-    </ion-buttons>
-  </ion-toolbar>
-</ion-header>
-
 <ion-content *ngIf="hideTab">
+  <div class="card">
+      <ion-card>
+        <ion-card-title>
+          <p style="text-align: center;">U-Book</p>
+        </ion-card-title>
+        <ion-card-content>
+          <img src="../../assets/icon/book_icon.png" class="login-header">
+        </ion-card-content>
+      </ion-card>
+  </div>
+
   <form [formGroup]="loginForm" (ngSubmit)="submitForm()" novalidate>
     <ion-item lines="full">
       <ion-label position="floating">Name</ion-label>
@@ -31,6 +33,9 @@
     <span style="color: red;" class="error ion-padding" *ngIf="isSubmitted && !passConf">
       Password Or Name does not Same
     </span>
+    <ion-row>
+      <p class="Row-Margin">Dont Have Account yet?</p><ion-router-link class="Row-Margin-link" href="/regis">Register Here</ion-router-link>
+    </ion-row>
     <ion-row>
       <ion-col>
         <ion-button type="submit" color="danger" expand="block">Submit</ion-button>

@@ -5,3 +5,11 @@ input[type="file"] {
     width: 50%;
     height: 100%;
   }
+
+  .Row-Margin{
+    margin-left: 10px;
+    &-link {
+        margin-left: 10px;
+        margin-top: 15px;
+    }
+}

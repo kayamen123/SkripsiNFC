@@ -4,7 +4,7 @@ import { PreloadAllModules, RouterModule, Routes } from '@angular/router';
 const routes: Routes = [
   {
     path: '',
-    redirectTo: 'regis',
+    redirectTo: 'login',
     pathMatch: 'full'
   },
   {
@@ -35,6 +35,18 @@ const routes: Routes = [
     path: 'nfc-pengembalian',
     loadChildren: () => import('./nfc-pengembalian/nfc-pengembalian.module').then( m => m.NfcPengembalianPageModule)
   },
+  {
+    path: 'admin-cms',
+    loadChildren: () => import('./admin-cms/admin-cms.module').then( m => m.AdminCmsPageModule)
+  },
+  {
+    path: 'admin-cms-book',
+    loadChildren: () => import('./admin-cms-book/admin-cms-book.module').then( m => m.AdminCmsBookPageModule)
+  },
+  {
+    path: 'help-user',
+    loadChildren: () => import('./help-user/help-user.module').then( m => m.HelpUserPageModule)
+  }
 ];
 
 @NgModule({

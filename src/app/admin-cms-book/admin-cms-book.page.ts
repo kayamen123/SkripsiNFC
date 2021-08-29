@@ -4,7 +4,7 @@ import { FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms'
 import { Router } from '@angular/router';
 
 import { Ndef, NdefEvent, NFC } from '@ionic-native/nfc/ngx';
-import { AlertController, LoadingController, NavController, Platform, ToastController } from '@ionic/angular';
+import { AlertController, LoadingController, ModalController, NavController, Platform, ToastController } from '@ionic/angular';
 import { map } from 'rxjs/operators';
 import { BookLibrary } from '../model/bookLibrary';
 import { RegisterServiceService } from '../service/register-service.service';
@@ -13,24 +13,21 @@ import * as moment from 'moment-timezone';
 import { SafeResourceUrl } from '@angular/platform-browser';
 import { Plugins } from '@capacitor/core';
 import { WordLibrary } from '../model/wordLibrary';
+import { ModalEditBookComponent } from '../modal/modal-edit-book/modal-edit-book.component';
 
 
-const { Browser } = Plugins;
 @Component({
-  selector: 'app-nfc-pinjam',
-  templateUrl: './nfc-pinjam.page.html',
-  styleUrls: ['./nfc-pinjam.page.scss'],
+  selector: 'app-admin-cms-book',
+  templateUrl: './admin-cms-book.page.html',
+  styleUrls: ['./admin-cms-book.page.scss'],
 })
-export class NfcPinjamPage implements OnInit {
+export class AdminCmsBookPage implements OnInit {
+
   tagId: any = null;
   currentDate: any = null;
   validDate: any = null;
   tagCheck = false;
   bookInfo: BookLibrary;
-  name: string;
-  role: string;
-  status = false;
-  profileStatus = false;
   //tagDesc: an
   hasil1: string[] = [];
   hasil2: string[] = [];
@@ -60,6 +57,10 @@ export class NfcPinjamPage implements OnInit {
   bookCounter = 0;
   momentjs: any = moment;
   photo: SafeResourceUrl = 'https://i.pinimg.com/originals/0c/3b/3a/0c3b3adb1a7530892e55ef36d3be6cb8.png';
+  profileStatus = false;
+  name: string;
+  role: string;
+  status = false;
 
   constructor(
     private nfc: NFC, 
@@ -73,6 +74,7 @@ export class NfcPinjamPage implements OnInit {
     public formBuilder: FormBuilder,
     public rgsSrv: RegisterServiceService,
     public router: Router,
+    private modalCtrl: ModalController
     
     ) {
       this.platform.ready().then(()=>{
@@ -87,10 +89,7 @@ export class NfcPinjamPage implements OnInit {
     this.name = localStorage.getItem('name');
     this.role = localStorage.getItem('roles');
     console.log("Name :",this.name);
-    console.log("Role :",this.role);  
-    if(this.name == null) {
-      this.router.navigate(['/login']);
-    }
+    console.log("Role :",this.role);
     if(this.role == 'admin') {
       this.status = true;
     }
@@ -100,21 +99,84 @@ export class NfcPinjamPage implements OnInit {
   IonViewDidEnter() {
     this.platform.backButton.subscribeWithPriority(5, () => {
       this.router.navigate(['/profile']);
-    })
+    })     
     this.bookForm = this.formBuilder.group({
       rfid: ['', [Validators.required]]
     })
     this.name = localStorage.getItem('name');
     this.role = localStorage.getItem('roles');
     console.log("Name :",this.name);
-    console.log("Role :",this.role);  
-    if(this.name == null) {
-      this.router.navigate(['/login']);
-    }
+    console.log("Role :",this.role);
     if(this.role == 'admin') {
       this.status = true;
     }
     this.cdr.detectChanges();
+      //do stuff with images
+  }
+
+  ModalEditOpen() {
+    this.presentModal();
+  }
+
+  async presentModal() {
+    const data = {      
+      rfid: this.keyId,
+    book_name: this.bookName,
+    date: this.dateBook,
+    isbn: this.isbnBook,
+    writter: this.writterBook,
+    description: this.descBook,
+    imageUrl: this.linkBook
+  }
+  console.log('ini Data: '+data);
+    const modal = await this.modalCtrl.create({
+      component: ModalEditBookComponent,
+      componentProps: { selectedBook: data }
+    });
+
+    modal.onDidDismiss().then(resultData => {
+      console.log(resultData.data , resultData.role);
+      this.historyStatus = false;
+      if(this.hasil1.length >= 1) {
+        this.hasil1.splice(0,this.hasil1.length);
+        this.hasil2.splice(0,this.hasil2.length);
+        this.hasil3.splice(0,this.hasil3.length);
+        this.hasil4.splice(0,this.hasil4.length);
+        this.hasil5.splice(0,this.hasil5.length);
+        this.hasil6.splice(0,this.hasil6.length);
+        this.dictionary.splice(0, this.dictionary.length);
+        this.dictionary1.splice(0, this.dictionary1.length);
+        this.dictionary2.splice(0, this.dictionary2.length);
+        this.bookName = null;
+        this.dateBook = null;
+        this.isbnBook = null;
+        this.descBook  = null;
+        this.writterBook = null;
+        this.linkBook = null;
+      }
+      this.cdr.detectChanges();
+    })
+
+    return await modal.present();
+  }
+  
+
+  logout(){
+    localStorage.clear();
+    this.router.navigate(['/login']);
+  }
+  
+  profile(){
+    this.router.navigate(['/profile']);
+  }
+  inputBook(){
+    this.router.navigate(['/nfc']);
+  }
+  nfcPinjam(){
+    this.router.navigate(['/nfc-pinjam']);
+  }
+  adminUser(){
+    this.router.navigate(['/admin-cms']);
   }
 
  async checkNFC(){
@@ -155,25 +217,6 @@ export class NfcPinjamPage implements OnInit {
       this.tagListenerSuccess(event);       
       console.log(this.historyStatus);
     });
-  }
-
-  
-  logout(){
-    localStorage.clear();
-    this.router.navigate(['/login']);
-  }
-  
-  profile(){
-    this.router.navigate(['/profile']);
-  }
-  inputBook(){
-    this.router.navigate(['/nfc']);
-  }
-  adminUser(){
-    this.router.navigate(['/admin-cms']);
-  }
-  adminBook(){
-    this.router.navigate(['/admin-cms-book']);
   }
 
   tagListenerSuccess(tagEvent) {

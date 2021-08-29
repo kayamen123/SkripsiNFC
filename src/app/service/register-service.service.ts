@@ -24,7 +24,7 @@ export class RegisterServiceService {
   
   constructor(private db: AngularFireDatabase) { 
     this.userLibraryRef = db.list(this.dbPath);
-    this.bookLibraryRef = db.list(this.dbPath2);
+ //   this.bookLibraryRef = db.list(this.dbPath2);
     // this.wordLibraryRef = db.list(this.dbPath3);
   }
 
@@ -32,8 +32,30 @@ export class RegisterServiceService {
     return this.userLibraryRef;
   }
 
-  getDictionary(tagId: any): AngularFireList<WordLibrary[]>{
-    this.wordLibraryRef = this.db.list('/Dictionary/'+tagId);
+  getDictionaryBook(bookId: any, keysId: any): AngularFireList<WordLibrary[]>{
+    if(keysId == null) {
+      this.wordLibraryRef = this.db.list('/Dictionary/'+bookId+'/0');
+    } else {
+      this.wordLibraryRef = this.db.list('/Dictionary/'+bookId+'/0/'+keysId);
+    }
+    return this.wordLibraryRef;
+  }
+
+  getDescBook(descId: any, keysId: any): AngularFireList<WordLibrary[]> {
+    if(keysId == null) {
+      this.wordLibraryRef = this.db.list('/Dictionary/'+descId+'/1');
+    } else {
+      this.wordLibraryRef = this.db.list('/Dictionary/'+descId+'/1/'+keysId);
+    }
+    return this.wordLibraryRef;
+  }
+
+  getWritterBook(writterId: any, keysId: any): AngularFireList<WordLibrary[]> {
+    if(keysId == null) {
+      this.wordLibraryRef = this.db.list('/Dictionary/'+writterId+'/2');
+    } else {
+      this.wordLibraryRef = this.db.list('/Dictionary/'+writterId+'/2/'+keysId);
+    }
     return this.wordLibraryRef;
   }
 
@@ -63,9 +85,19 @@ export class RegisterServiceService {
     return this.borrowLibraryRef.push(bookLib);
   }
 
-  createDictionaryBook(wordLib: WordLibrary[], tagId: any): any {
-    this.wordLibraryRef = this.db.list('/Dictionary/'+tagId);
+  createDictionaryBook(wordLib: WordLibrary[], bookId: any): any {
+    this.wordLibraryRef = this.db.list('/Dictionary/'+bookId+'/0');
     return this.wordLibraryRef.push(wordLib);
+  }
+
+  createDictionaryDesc(descLib: WordLibrary[], bookId: any): any {
+    this.wordLibraryRef = this.db.list('/Dictionary/'+bookId+'/1');
+    return this.wordLibraryRef.push(descLib);
+  }
+
+  createDictionaryWritter(writterLib: WordLibrary[], bookId: any): any {
+    this.wordLibraryRef = this.db.list('/Dictionary/'+bookId+'/2');
+    return this.wordLibraryRef.push(writterLib);
   }
 
   createHistoryBook(bookLib: HistoryLibrary, userName: any): any {
@@ -74,8 +106,19 @@ export class RegisterServiceService {
   }
 
   createBookLibrary(bookLib: BookLibrary, photo: SafeResourceUrl): any {
+    this.bookLibraryRef = this.db.list('/booklibrary/'+bookLib.book_name+"/"+bookLib.rfid);
     bookLib.imageUrl = photo;
     return this.bookLibraryRef.push(bookLib);
+  }
+
+  refreshBookLibrary(book_name: any, rfid: any): Promise<void> {
+    this.bookLibraryRef = this.db.list('/booklibrary/'+book_name+"/"+rfid);
+    return this.bookLibraryRef.remove();
+  }
+
+  refreshDictionary(bookId: any): Promise<void> {
+    this.wordLibraryRef = this.db.list('/Dictionary/'+bookId);
+    return this.wordLibraryRef.remove();
   }
 
   updateStatusBook1(key: string,bookLib: any): Promise<void> {
@@ -94,6 +137,7 @@ export class RegisterServiceService {
   }
 
   updateUserLibrary(key: string, value: any): Promise<void> {
+    value.key = null;
     return this.userLibraryRef.update(key, value);
   }
 

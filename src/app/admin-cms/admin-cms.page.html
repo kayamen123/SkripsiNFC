@@ -10,6 +10,10 @@
         <ion-icon name="mail" slot="start"></ion-icon>
         <ion-label>Home</ion-label>
       </ion-item>
+      <ion-item *ngIf="status" (click)="inputBook()">
+        <ion-icon name="mail" slot="start"></ion-icon>
+        <ion-label>Input Book</ion-label>
+      </ion-item>
       <ion-item *ngIf="status" (click)="nfcPinjam()">
         <ion-icon name="paper-plane" slot="start"></ion-icon>
         <ion-label>Buku</ion-label>
@@ -17,10 +21,6 @@
       <ion-item *ngIf="status" (click)="adminBook()">
         <ion-icon name="paper-plane" slot="start"></ion-icon>
         <ion-label>Book Admin</ion-label>
-      </ion-item>
-      <ion-item *ngIf="status" (click)="adminUser()">
-        <ion-icon name="paper-plane" slot="start"></ion-icon>
-        <ion-label>User Admin</ion-label>
       </ion-item>
       <ion-item *ngIf="!status" (click)="nfcPinjam()">
         <ion-icon name="heart" slot="start"></ion-icon>
@@ -33,31 +33,41 @@
     </ion-list>
   </ion-content>
 </ion-menu> -->
-<!-- 
-<div class="ion-page" id="main-content"> -->
-  <ion-header>
+
+<!-- <div class="ion-page" id="main-content"> -->
+
+  <ion-header *ngIf="hideTab">
     <ion-toolbar>
-      <ion-title>Buku</ion-title>
+      <ion-title>User Admin</ion-title>
       <ion-buttons slot="start">
         <ion-back-button defaultHref="profile"></ion-back-button>
       </ion-buttons>
     </ion-toolbar>
   </ion-header>
-  <ion-content>
-      <ion-label *ngIf="!historyStatus" position="floating">Scan Your RFID to See Book :</ion-label>
-    <ion-card *ngIf="historyStatus">
-      <img class="profile-picture" [src]="photo">
-      <ion-card-header>
-        <ion-card-title>{{bookName}}</ion-card-title>
-        <ion-card-title>{{dateBook}}</ion-card-title>
-        <ion-card-subtitle>{{isbnBook}}</ion-card-subtitle>
-        <ion-card-subtitle>{{writterBook}}</ion-card-subtitle>
-      </ion-card-header>
-      <ion-card-content>
-        <ion-card-title>Description :</ion-card-title>
-        <br>
-        {{descBook}}
-      </ion-card-content>
-    </ion-card>
+
+
+  <ion-content *ngIf="hideTab">
+    <div class="ion-padding">
+
+      <!-- Theme classes dark, material, bootstrap -->
+      <ngx-datatable 
+        #table
+        class="material"
+        [limit]="8" 
+        [rows]="rows" 
+        [headerHeight]="'80'"
+        [footerHeight]="50"
+        [rowHeight]="50" 
+        [count]="userLib.length"
+        [columns]="columns"
+        [columnMode]="'force'" 
+        [sortType]="'single'" 
+        [headerHeight]="50" 
+        [footerHeight]="50"
+        (activate)="editModal($event)">
+      </ngx-datatable>
+
+
+    </div>
   </ion-content>
 <!-- </div> -->

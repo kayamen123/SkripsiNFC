@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, Component, ElementRef, OnInit, ViewChild } from '@angular/core';
+import { ChangeDetectorRef, Component, ElementRef, Input, OnInit, ViewChild } from '@angular/core';
 import { async } from '@angular/core/testing';
 import { AngularFireStorage, AngularFireUploadTask } from '@angular/fire/storage';
 import { FormBuilder, FormControl, FormGroup, Validators } from '@angular/forms';
@@ -7,25 +7,22 @@ import { Router } from '@angular/router';
 import { Camera, CameraResultType, CameraSource, Capacitor } from '@capacitor/core';
 
 import { Ndef, NdefEvent, NFC } from '@ionic-native/nfc/ngx';
-import { AlertController, LoadingController, NavController, Platform, ToastController } from '@ionic/angular';
+import { AlertController, LoadingController, ModalController, NavController, Platform, ToastController } from '@ionic/angular';
 import * as moment from 'moment';
-import { WordLibrary } from '../model/wordLibrary';
-import { RegisterServiceService } from '../service/register-service.service';
-
-
+import { BookLibrary } from 'src/app/model/bookLibrary';
+import { WordLibrary } from '../../model/wordLibrary';
+import { RegisterServiceService } from '../../service/register-service.service';
 
 @Component({
-  selector: 'app-nfc',
-  templateUrl: './nfc.page.html',
-  styleUrls: ['./nfc.page.scss'],
+  selector: 'app-modal-edit-book',
+  templateUrl: './modal-edit-book.component.html',
+  styleUrls: ['./modal-edit-book.component.scss'],
 })
-export class NfcPage implements OnInit {
+export class ModalEditBookComponent implements OnInit {
 
- @ViewChild('filePicker', { static: false }) filePickerRef: ElementRef<HTMLInputElement>;
- name: string;
- role: string;
- status = false;
- profileStatus = false;
+
+  @ViewChild('filePicker', { static: false }) filePickerRef: ElementRef<HTMLInputElement>;
+  @Input() selectedBook: any;
   tagId: any = null;
   myDate: any = null;
   record: any = null;
@@ -81,6 +78,7 @@ export class NfcPage implements OnInit {
     private sanitizer: DomSanitizer,
     private storage: AngularFireStorage,
     private platform: Platform,
+    private modalCtrl: ModalController,
     private loadingCtrl: LoadingController
     ) { 
       this.platform.ready().then(()=>{
@@ -97,63 +95,37 @@ export class NfcPage implements OnInit {
       writter: ['', [Validators.required]],
       description: ['', [Validators.required, Validators.minLength(10)]]
     });
-    this.isDesktop = false;
-    
-    if((this.platform.is('mobile') && this.platform.is('hybrid')) || 
-    this.platform.is('desktop')) {
-      this.isDesktop = true;
-    }
-    this.name = localStorage.getItem('name');
-    this.role = localStorage.getItem('roles');
-    console.log("Name :",this.name);
-    console.log("Role :",this.role);  
-    if(this.name == null) {
-      this.router.navigate(['/login']);
-    }
-    if(this.role == 'admin') {
-      this.status = true;
-    }
-    this.cdr.detectChanges();
+    console.log(this.selectedBook);
+    this.bookForm.patchValue({
+      rfid: this.selectedBook.rfid,
+      book_name: this.selectedBook.book_name,
+      date: this.selectedBook.date,
+      isbn: this.selectedBook.isbn,
+      writter: this.selectedBook.writter,
+      description: this.selectedBook.description 
+    })
+    console.log(this.bookForm.value);
+    this.bookId = this.bookForm.value.rfid;
+    this.dataUrl1 = this.selectedBook.imageUrl;
+    this.myDate = this.selectedBook.date
+    this.photo = "https://"+this.dataUrl1;
+    console.log(this.bookId);
   }
 
   onChange() {
     this.myDate = this.momentjs().format("MMM Do YY");
-    if(this.bookForm.value.book_name) {
-      this.book = this.bookForm.value.book_name;
-      this.isDisabled = true;
-    } else {
-      this.isDisabled = false;
-    }
   }
- 
+
+  onCancel() {
+    this.modalCtrl.dismiss(null, 'cancel');
+  }
+
 
   IonViewDidEnter() {
-    this.platform.backButton.subscribeWithPriority(5, () => {
-      this.router.navigate(['/profile']);
-    })
-    this.bookForm = this.formBuilder.group({
-      rfid: ['', [Validators.required]],
-      book_name: ['', [Validators.required, Validators.minLength(2)]],
-      date: ['', [Validators.required]],
-      isbn: ['', [Validators.required , Validators.pattern('^[0-9]+$')]],
-      writter: ['', [Validators.required]],
-      description: ['', [Validators.required, Validators.minLength(10)]]
-    });
     this.isDesktop = false;
-    
     if((this.platform.is('mobile') && this.platform.is('hybrid')) || 
-    this.platform.is('desktop')) {
+    this.platform.is('desktop')){
       this.isDesktop = true;
-    }
-    this.name = localStorage.getItem('name');
-    this.role = localStorage.getItem('roles');
-    console.log("Name :",this.name);
-    console.log("Role :",this.role);  
-    if(this.name == null) {
-      this.router.navigate(['/login']);
-    }
-    if(this.role == 'admin') {
-      this.status = true;
     }
     this.cdr.detectChanges();
   }
@@ -164,7 +136,7 @@ export class NfcPage implements OnInit {
 
   submitForm() {
     this.isSubmitted = true;
-    if (!this.bookForm.valid || this.tagId == null || this.rfCount == 0) {
+    if (!this.bookForm.valid) {
       this.nfcAlert();
       console.log('Please provide all the required values!')
       return false;
@@ -185,27 +157,29 @@ export class NfcPage implements OnInit {
     });
     await loading.present();
     this.bookForm.addControl('imageUrl', new FormControl(this.photo, Validators.required));
-    this.rgsSrv.refreshBookLibrary(this.bookForm.value.book_name,this.bookId).then(result => {
-      console.log(result);
-      this.rgsSrv.refreshDictionary(this.bookId).then(result2 => {
-        console.log(result2);
-        this.rgsSrv.createBookLibrary(this.bookForm.value, this.dataUrl1).then(res => {
-          console.log(res);
-          this.rgsSrv.createDictionaryBook(this.dictionary1,this.bookId).then(res1 => {
-            console.log(res1);
-            this.rgsSrv.createDictionaryDesc(this.dictionary3,this.bookId).then(res2 => {
-              console.log(res2);
-              this.rgsSrv.createDictionaryWritter(this.dictionary5,this.bookId).then(res3 => {
-                console.log(res3);
-                loading.dismiss();
-                this.bookForm.reset();
-                this.router.navigate(['/profile']);
-              }).catch(error => console.log(error));
-            }).catch(error => console.log(error));
-          }).catch(error => console.log(error));
-        }).catch(error => console.log(error));
-      }).catch(error => console.log(error));
-    }).catch(error => console.log(error));
+    this.modalCtrl.dismiss(this.bookForm.value, 'cancel');
+    // this.rgsSrv.refreshBookLibrary(this.bookForm.value.book_name,this.bookId).then(result => {
+    //   console.log(result);
+    //   this.rgsSrv.refreshDictionary(this.bookId).then(result2 => {
+    //     console.log(result2);
+    //     this.rgsSrv.createBookLibrary(this.bookForm.value, this.dataUrl1).then(res => {
+    //       console.log(res);
+    //       this.rgsSrv.createDictionaryBook(this.dictionary1,this.bookId).then(res1 => {
+    //         console.log(res1);
+    //         this.rgsSrv.createDictionaryDesc(this.dictionary3,this.bookId).then(res2 => {
+    //           console.log(res2);
+    //           this.rgsSrv.createDictionaryWritter(this.dictionary5,this.bookId).then(res3 => {
+    //             console.log(res3);
+    //             loading.dismiss();
+    //             this.modalCtrl.dismiss(null, 'cancel');
+    //             this.bookForm.reset();
+    //             this.router.navigate(['/profile']);
+    //           }).catch(error => console.log(error));
+    //         }).catch(error => console.log(error));
+    //       }).catch(error => console.log(error));
+    //     }).catch(error => console.log(error));
+    //   }).catch(error => console.log(error));
+    // }).catch(error => console.log(error));
 
   }
 
@@ -247,16 +221,16 @@ export class NfcPage implements OnInit {
     const reader = new FileReader();
     console.log('File : '+file);
 
-     if(!file.type.match(pattern)){
-       console.log('File Format not supported');
-       return;
-     }
+    // if(!file.type.match(pattern)){
+    //   console.log('File Format not supported');
+    //   return;
+    // }
 
     reader.onload = () => {
-    this.photo = reader.result.toString();
+    //  this.photo = reader.result.toString();
       this.dataUrl = reader.result.toString();
       console.log(this.dataUrl);
-      console.log('Photo2:'+this.photo)
+    //  console.log('Photo2:'+this.photo)
       this.upload();
     };
     reader.readAsDataURL(file);
@@ -275,25 +249,6 @@ export class NfcPage implements OnInit {
     }
 
     return new File([u8arr], filename, {type: mime});
-  }
-
-
-  logout(){
-    localStorage.clear();
-    this.router.navigate(['/login']);
-  }
-  
-  profile(){
-    this.router.navigate(['/profile']);
-  }
-  nfcPinjam(){
-    this.router.navigate(['/nfc-pinjam']);
-  }
-  adminUser(){
-    this.router.navigate(['/admin-cms']);
-  }
-  adminBook(){
-    this.router.navigate(['/admin-cms-book']);
   }
 
   async upload(){
@@ -374,12 +329,15 @@ export class NfcPage implements OnInit {
       return (await toast).present();
 
     }).subscribe(async (event) => {
+      let TagId = await this.nfc.bytesToHexString(event.tag.id);
       if(this.bookForm.value.book_name == "" 
       || this.bookForm.value.description == "" 
       || this.bookForm.value.isbn == "" 
       || this.bookForm.value.writter == ""
       || this.dataUrl1 == null) {
-      this.nfcAlert();
+      this.nfcAlert()
+    } else if (TagId != this.bookId) {
+
     } else {
           console.log('received ndef message. the tag contains: ', event);
           console.log('decode tag id', this.nfc.bytesToHexString(event.tag.id));

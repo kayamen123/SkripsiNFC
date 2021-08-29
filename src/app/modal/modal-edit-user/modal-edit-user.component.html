@@ -1,11 +1,18 @@
-<ion-header *ngIf="hideTab">
+<ion-header>
   <ion-toolbar>
-    <ion-title class="ion-text-center">Register</ion-title>
+    <ion-title>
+      {{selectedUser.name}}
+    </ion-title>
+    <ion-buttons slot="primary">
+      <ion-button (click)="onCancel()">
+        <ion-icon name="close"></ion-icon>
+      </ion-button>
+    </ion-buttons>
   </ion-toolbar>
 </ion-header>
 
-<ion-content *ngIf="hideTab">
-  <form [formGroup]="registerForm" (ngSubmit)="submitForm()" novalidate>
+<ion-content>
+  <form [formGroup]="registerForm" (ngSubmit)="onSubmit()" novalidate>
     <ion-item lines="full">
       <ion-label position="floating">Name</ion-label>
       <ion-input formControlName="name" type="text"></ion-input>
@@ -30,7 +37,7 @@
 
     <ion-item>
       <ion-label>Role</ion-label>
-      <ion-select placeholder="Select One" interface="popover" formControlName="role">
+      <ion-select interface="popover" formControlName="role">
         <ion-select-option value="admin">Admin</ion-select-option>
         <ion-select-option value="user">User</ion-select-option>
       </ion-select>
@@ -85,7 +92,7 @@
         </ion-card-content>
       </ion-card>
     </ion-item>
-  <ion-item>
+    <ion-item>
     <ion-button size="small" (click)="getPicture('camera')">
       <ion-icon name="camera" slot="start"></ion-icon>
       <ion-label>Camera</ion-label>
@@ -97,11 +104,8 @@
     </ion-button>
 
     <input type="file" *ngIf="isDesktop" #filePicker (change)="onFileChoose($event)"/>
-  </ion-item>
+    </ion-item>
 
-  <ion-row>
-    <p class="Row-Margin">Already have Account?</p><ion-router-link class="Row-Margin-link" href="/login">Login Here</ion-router-link>
-  </ion-row>
     <ion-row>
       <ion-col>
         <ion-button type="submit" color="danger" expand="block">Submit</ion-button>

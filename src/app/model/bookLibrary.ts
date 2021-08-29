@@ -4,10 +4,11 @@ export class BookLibrary {
     key: string;
     book_name: string;
     rfid: string;
-    book_status: boolean;
+    isbn: number;
+    writter: string;
     date: string;
     description: string;
     imageUrl: SafeResourceUrl;
-    constructor(key:string, book_name:string, rfid:string, book_status: boolean, 
+    constructor(key:string, book_name:string, rfid:string, isbn: number, writter: string, 
         date: string, description: string, imageUrl: SafeResourceUrl) {} 
 }
