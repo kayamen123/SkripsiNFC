@@ -80,7 +80,6 @@ export class RegisterServiceService {
   }
 
   createBorrowBook(bookLib: BorrowLibrary, rfid: any): any {
-    console.log('service RFID:', rfid);
     this.borrowLibraryRef = this.db.list('/borrowBook/'+rfid);
     return this.borrowLibraryRef.push(bookLib);
   }

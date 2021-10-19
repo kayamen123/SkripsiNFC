@@ -37,24 +37,36 @@
 <div class="ion-page" id="main-content"> -->
   <ion-header>
     <ion-toolbar>
-      <ion-title>Buku</ion-title>
+      <ion-title class="ion-text-center">Buku</ion-title>
       <ion-buttons slot="start">
         <ion-back-button defaultHref="profile"></ion-back-button>
       </ion-buttons>
     </ion-toolbar>
   </ion-header>
   <ion-content>
-      <ion-label *ngIf="!historyStatus" position="floating">Scan Your RFID to See Book :</ion-label>
+    <div class="xc" *ngIf="!historyStatus">
+      <ion-label *ngIf="!historyStatus" position="floating">Please scan your NFC</ion-label>
+    </div>
+    <img *ngIf="!historyStatus" src="../../assets/icon/book_icon.png" class="login-header">
     <ion-card *ngIf="historyStatus">
-      <img class="profile-picture" [src]="photo">
+      <img class="book-img" [src]="photo">
       <ion-card-header>
         <ion-card-title>{{bookName}}</ion-card-title>
-        <ion-card-title>{{dateBook}}</ion-card-title>
-        <ion-card-subtitle>{{isbnBook}}</ion-card-subtitle>
-        <ion-card-subtitle>{{writterBook}}</ion-card-subtitle>
+        <ion-item>
+          <ion-label>ISBN :</ion-label>
+          <ion-label>{{isbnBook}}</ion-label>
+        </ion-item>
+        <ion-item>
+          <ion-label>Author  :</ion-label>
+          <ion-label>{{writterBook}}</ion-label>
+        </ion-item>
+        <ion-item>
+          <ion-label>Published Date  :</ion-label>
+          <ion-label>{{dateBook}}</ion-label>
+        </ion-item>
       </ion-card-header>
       <ion-card-content>
-        <ion-card-title>Description :</ion-card-title>
+        <ion-card-title>Review :</ion-card-title>
         <br>
         {{descBook}}
       </ion-card-content>

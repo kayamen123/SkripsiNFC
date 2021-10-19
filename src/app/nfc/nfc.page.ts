@@ -30,6 +30,13 @@ export class NfcPage implements OnInit {
   myDate: any = null;
   record: any = null;
   currentDate: any = null;
+  beforeCompressBook: any = null;
+  beforeCompressWritter: any = null;
+  beforeCompressReview: any = null;
+  afterCompressBook: any = null;
+  afterCompressWritter: any = null;
+  afterCompressReview: any = null;
+  checkCompress = false;
   //tagDesc: an
   bookForm: FormGroup;
   bookForm2: FormGroup;
@@ -49,7 +56,7 @@ export class NfcPage implements OnInit {
   rfCount = 0;
   dicCount = 0;
   test = '16';
-  asciiValue = 26;
+  asciiValue = 255;
   pValue: string;
   cValue: string;
   hasil: string[] = [];
@@ -105,8 +112,6 @@ export class NfcPage implements OnInit {
     }
     this.name = localStorage.getItem('name');
     this.role = localStorage.getItem('roles');
-    console.log("Name :",this.name);
-    console.log("Role :",this.role);  
     if(this.name == null) {
       this.router.navigate(['/login']);
     }
@@ -115,19 +120,10 @@ export class NfcPage implements OnInit {
     }
     this.cdr.detectChanges();
   }
-
-  onChange() {
-    this.myDate = this.momentjs().format("MMM Do YY");
-    if(this.bookForm.value.book_name) {
-      this.book = this.bookForm.value.book_name;
-      this.isDisabled = true;
-    } else {
-      this.isDisabled = false;
-    }
-  }
  
 
   IonViewDidEnter() {
+    this.cdr.detectChanges();
     this.platform.backButton.subscribeWithPriority(5, () => {
       this.router.navigate(['/profile']);
     })
@@ -147,8 +143,6 @@ export class NfcPage implements OnInit {
     }
     this.name = localStorage.getItem('name');
     this.role = localStorage.getItem('roles');
-    console.log("Name :",this.name);
-    console.log("Role :",this.role);  
     if(this.name == null) {
       this.router.navigate(['/login']);
     }
@@ -169,10 +163,7 @@ export class NfcPage implements OnInit {
       console.log('Please provide all the required values!')
       return false;
     } else {
-      console.log(this.bookForm.value)
       this.bookId = this.bookForm.value.rfid;
-      console.log(this.bookId);
-      console.log(this.description);
       this.presentLoading();
     }
   }
@@ -186,7 +177,6 @@ export class NfcPage implements OnInit {
     await loading.present();
     this.bookForm.addControl('imageUrl', new FormControl(this.photo, Validators.required));
     this.rgsSrv.refreshBookLibrary(this.bookForm.value.book_name,this.bookId).then(result => {
-      console.log(result);
       this.rgsSrv.refreshDictionary(this.bookId).then(result2 => {
         console.log(result2);
         this.rgsSrv.createBookLibrary(this.bookForm.value, this.dataUrl1).then(res => {
@@ -222,11 +212,8 @@ export class NfcPage implements OnInit {
       source: CameraSource.Prompt,
       saveToGallery: true
     });
-    console.log('Image :'+ image)
     this.dataUrl = image.dataUrl;
-    console.log(this.dataUrl);
     this.photo = this.sanitizer.bypassSecurityTrustResourceUrl(image && (image.dataUrl));
-    console.log('Photo1:'+this.photo)
     this.upload();
   }
   
@@ -255,8 +242,6 @@ export class NfcPage implements OnInit {
     reader.onload = () => {
     this.photo = reader.result.toString();
       this.dataUrl = reader.result.toString();
-      console.log(this.dataUrl);
-      console.log('Photo2:'+this.photo)
       this.upload();
     };
     reader.readAsDataURL(file);
@@ -303,16 +288,12 @@ export class NfcPage implements OnInit {
       translucent: true,
     });
     await loading.present();
-    console.log(this.dataUrl);
     const file = this.dataURLtoFile(this.dataUrl, 'file');
     console.log('file :', file);
     const filePath = 'books/'+this.bookForm.value.book_name;
-    /* const ref = this.storage.ref(filePath)
-    const task = ref.put(file);*/
     const upload = this.storage.upload(filePath, file).then(() => {
       const ref = this.storage.ref(filePath);
       const downloadURL = ref.getDownloadURL().subscribe(url => {
-        console.log(url);
         this.dataUrl1 = url;
         loading.dismiss();
       });   
@@ -336,6 +317,7 @@ export class NfcPage implements OnInit {
   async writeNFC() {
     await this.nfc.enabled().then(() => {
       this.addListenNFC();
+      this.cdr.detectChanges();
     })
     .catch(async (err) => {
       let alert = await this.alertCtrl.create({
@@ -358,9 +340,9 @@ export class NfcPage implements OnInit {
   }
 
   async addListenNFC() {
+    this.cdr.detectChanges();
     console.log('enter into a addListenNFC');
     this.tagId = "";
-    //this.tagDesc = "";
     this.nfc.addTagDiscoveredListener(() => {
       console.log('successfully attached ndef listener');
     }, async (err) => {
@@ -395,54 +377,47 @@ export class NfcPage implements OnInit {
             this.hasil3.splice(0,this.hasil3.length);
           }
           this.tagId = "";
-          //this.tagDesc = "";
-          this.rfCount += 1;  
           let tagid = await this.nfc.bytesToHexString(event.tag.id);
           this.tagId = tagid;
           for(let x = 0; x < 3; x++) {
             if(x == 0) {
-              this.dicCount = 0;
               this.word = this.bookForm.value.book_name;
               this.book = this.bookForm.value.book_name;
             } else if(x == 1) {
-              this.dicCount = 0;
-              console.log("Diccount-1:"+this.dicCount);
               this.word = this.bookForm.value.description;
             } else {
-              this.dicCount = 0;
-              console.log("Diccount-2:"+this.dicCount);
               this.word = this.bookForm.value.writter;
             }
-            this.asciiValue = 26;
+            this.asciiValue = 0;
             this.word_split = this.word.split('');
             for(let i = 0; i < this.word_split.length; i++) {
               if(this.dictionary.length == 0 && x == 0) {
-                this.dicCount += 1;
+                this.asciiValue += 1;
                 const array: WordLibrary[] = [
                   {
                     key: null,
-                    id: this.dicCount,
+                    id: this.asciiValue,
                     name: this.word_split[i]
                   }]
                   this.dictionary.push(array[0])
               } else if (this.dictionary2.length == 0 && x == 1){
-                this.dicCount += 1;
+                this.asciiValue += 1;
                 const array: WordLibrary[] = [
                   {
                     key: null,
-                    id: this.dicCount,
+                    id: this.asciiValue,
                     name: this.word_split[i]
                   }]
-                this.dictionary2.push(array[0]);    
+                this.dictionary2.push(array[0]);
               } else if (this.dictionary4.length == 0 && x == 2) {
-                this.dicCount += 1;
+                this.asciiValue += 1;
                 const array: WordLibrary[] = [
                   {
                     key: null,
-                    id: this.dicCount,
+                    id: this.asciiValue,
                     name: this.word_split[i]
                   }]
-                this.dictionary4.push(array[0]); 
+                this.dictionary4.push(array[0]);
               } else {
                   if(x == 0) {
                     for(let f = 0; f < this.dictionary.length;f++) {
@@ -468,29 +443,29 @@ export class NfcPage implements OnInit {
                 }
                 if (!this.trust) {
                     if(x == 0) {
-                      this.dicCount += 1;
+                      this.asciiValue += 1;
                       const array1: WordLibrary[] = [
                         {
                           key: null,
-                          id: this.dicCount,
+                          id: this.asciiValue,
                           name: this.word_split[i]
                         }]
                       this.dictionary.push(array1[0]);
                     } else if(x == 1) {
-                      this.dicCount += 1;
+                      this.asciiValue += 1;
                       const array1: WordLibrary[] = [
                         {
                           key: null,
-                          id: this.dicCount,
+                          id: this.asciiValue,
                           name: this.word_split[i]
                         }]
                       this.dictionary2.push(array1[0]);
                     } else {
-                      this.dicCount += 1;
+                      this.asciiValue += 1;
                       const array1: WordLibrary[] = [
                         {
                           key: null,
-                          id: this.dicCount,
+                          id: this.asciiValue,
                           name: this.word_split[i]
                         }]
                       this.dictionary4.push(array1[0]);
@@ -505,9 +480,7 @@ export class NfcPage implements OnInit {
               for(let i = 0; i <= this.word_split.length; i++) {
                 if(i == 0) {
                   this.pValue = this.word_split[i];
-                  console.log(this.pValue);
                   for(let v = 0; v < this.dictionary1.length; v++) {
-                    console.log(this.dictionary1[v].name);
                     if (this.pValue == this.dictionary1[v].name) {
                       break;
                     }
@@ -515,7 +488,6 @@ export class NfcPage implements OnInit {
                 } else {
                   this.cValue = this.word_split[i];
                   const valueJoin = this.pValue.concat(this.cValue);
-                  console.log(valueJoin);
                   for(let v = 0; v < this.dictionary1.length; v++) {
                     if(valueJoin == this.dictionary1[v].name) {
                       this.pValue = valueJoin;
@@ -531,7 +503,6 @@ export class NfcPage implements OnInit {
                         id: this.asciiValue,
                         name: valueJoin
                       }]
-                    console.log(this.pValue);
                     this.dictionary1.push(array6[0]);
                     for(let d = 0; d < this.dictionary1.length; d++) {
                       if(this.pValue == this.dictionary1[d].name) {
@@ -554,9 +525,7 @@ export class NfcPage implements OnInit {
               for(let i = 0; i <= this.word_split.length; i++) {
                 if(i == 0) {
                   this.pValue = this.word_split[i];
-                  console.log(this.pValue);
                   for(let v = 0; v < this.dictionary3.length; v++) {
-                    console.log(this.dictionary3[v].name);
                     if (this.pValue == this.dictionary3[v].name) {
                       break;
                     }
@@ -564,7 +533,6 @@ export class NfcPage implements OnInit {
                 } else {
                   this.cValue = this.word_split[i];
                   const valueJoin = this.pValue.concat(this.cValue);
-                  console.log(valueJoin);
                   for(let v = 0; v < this.dictionary3.length; v++) {
                     if(valueJoin == this.dictionary3[v].name) {
                       this.pValue = valueJoin;
@@ -580,7 +548,6 @@ export class NfcPage implements OnInit {
                         id: this.asciiValue,
                         name: valueJoin
                       }]
-                    console.log(this.pValue);
                     this.dictionary3.push(array6[0]);
                     for(let d = 0; d < this.dictionary3.length; d++) {
                       if(this.pValue == this.dictionary3[d].name) {
@@ -603,9 +570,7 @@ export class NfcPage implements OnInit {
               for(let i = 0; i <= this.word_split.length; i++) {
                 if(i == 0) {
                   this.pValue = this.word_split[i];
-                  console.log(this.pValue);
                   for(let v = 0; v < this.dictionary5.length; v++) {
-                    console.log(this.dictionary5[v].name);
                     if (this.pValue == this.dictionary5[v].name) {
                       break;
                     }
@@ -613,7 +578,6 @@ export class NfcPage implements OnInit {
                 } else {
                   this.cValue = this.word_split[i];
                   const valueJoin = this.pValue.concat(this.cValue);
-                  console.log(valueJoin);
                   for(let v = 0; v < this.dictionary5.length; v++) {
                     if(valueJoin == this.dictionary5[v].name) {
                       this.pValue = valueJoin;
@@ -629,7 +593,6 @@ export class NfcPage implements OnInit {
                         id: this.asciiValue,
                         name: valueJoin
                       }]
-                    console.log(this.pValue);
                     this.dictionary5.push(array6[0]);
                     for(let d = 0; d < this.dictionary5.length; d++) {
                       if(this.pValue == this.dictionary5[d].name) {
@@ -649,15 +612,6 @@ export class NfcPage implements OnInit {
               this.dictionary5.splice(this.dictionary5.length-1, this.dictionary5.length);
             }
           }
-          console.log(this.dictionary1)
-          console.log(this.dictionary2)
-          console.log(this.dictionary3)
-          console.log(this.dictionary)
-          console.log(this.dictionary4)
-          console.log(this.dictionary5)
-          console.log('Hasil BookName: '+this.hasil);
-          console.log('Hasil Description: '+this.hasil2);
-          console.log('Hasil Writter', this.hasil3);
           var message = [
             this.ndef.textRecord(this.hasil.join(",")),
             this.ndef.textRecord(this.bookForm.value.date),
@@ -666,46 +620,45 @@ export class NfcPage implements OnInit {
             this.ndef.textRecord(this.hasil3.join(",")),
             this.ndef.uriRecord(""+this.dataUrl1),
         ];
-        
-            // write to the tag
-            this.nfc.write(message).then(
-              res => {
+          this.nfc.write(message).then(
+              async (res) => {
                 console.log('Wrote message to tag')
-                this.rfCount +=1;
+                let toast = this.toastCtrl.create({
+                  message: 'Write Success Please Press Submit to Finish the Process',
+                  duration: 2000,
+                  position: 'bottom'
+                });
+                (await toast).present();
+                this.rfCount = 1;
+                this.checkCompress = true;
+                this.beforeCompressBook = this.bookForm.value.book_name
+                this.beforeCompressWritter = this.bookForm.value.writter
+                this.beforeCompressReview = this.bookForm.value.description
+                this.afterCompressBook = this.hasil;
+                this.afterCompressWritter = this.hasil3;
+                this.afterCompressReview = this.hasil2;
+                this.cdr.detectChanges();
               },
-              error => { 
+              async (error) => { 
                 console.log('Write failed', error)
-                this.isError = true;
+                let toast = this.toastCtrl.create({
+                  message: 'Write Failed, Please Try Again',
+                  duration: 2000,
+                  position: 'bottom'
+                });
+                (await toast).present();
+                this.rfCount = 0;
+                this.checkCompress = true;
+                this.beforeCompressBook = this.bookForm.value.book_name
+                this.beforeCompressWritter = this.bookForm.value.writter
+                this.beforeCompressReview = this.bookForm.value.description
+                this.afterCompressBook = this.hasil;
+                this.afterCompressWritter = this.hasil3;
+                this.afterCompressReview = this.hasil2;
+                this.cdr.detectChanges();
               }
           )
-          
-
-          // if(event.tag.ndefMessage){
-          //   let payload = event.tag.ndefMessage[0].payload;
-          //   let tagContent = await this.nfc.bytesToString(payload).substring(3);
-          //   this.tagDesc = tagContent;
-          // }
-          if (this.rfCount == 1) {
-            let toast = this.toastCtrl.create({
-            message: 'NFC has been readed',
-            duration: 5000,
-            position: 'bottom'
-          });
-          (await toast).present();
           this.cdr.detectChanges();
-          this.rfCount = 0;
-        }
-
-        if(this.isError == true) {
-          let toast = this.toastCtrl.create({
-            message: 'Write Failed, Please Try Again',
-            duration: 5000,
-            position: 'bottom'
-          });
-          (await toast).present();
-          this.cdr.detectChanges();
-          this.isError = false;
-        }
       }
     });
   }

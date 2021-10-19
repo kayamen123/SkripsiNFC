@@ -6,25 +6,13 @@
   </ion-header>
   <ion-content>
     <ion-list>
-      <ion-item menu-close *ngIf="status" (click)="inputBook()">
-        <ion-icon name="mail" slot="start"></ion-icon>
+      <ion-item menu-close *ngIf="status" [routerLink]="['/nfc']">
+        <ion-icon name="book-outline" slot="start"></ion-icon>
         <ion-label>Input Book</ion-label>
       </ion-item>
-      <ion-item menu-close *ngIf="status" (click)="nfcPinjam()">
-        <ion-icon name="paper-plane" slot="start"></ion-icon>
-        <ion-label>Buku</ion-label>
-      </ion-item>
-      <ion-item menu-close *ngIf="status" (click)="adminBook()">
-        <ion-icon name="paper-plane" slot="start"></ion-icon>
-        <ion-label>Book Admin</ion-label>
-      </ion-item>
-      <ion-item menu-close *ngIf="status" (click)="adminUser()">
-        <ion-icon name="paper-plane" slot="start"></ion-icon>
-        <ion-label>User Admin</ion-label>
-      </ion-item>
-      <ion-item menu-close *ngIf="!status" (click)="nfcPinjam()">
-        <ion-icon name="heart" slot="start"></ion-icon>
-        <ion-label>Buku</ion-label>
+      <ion-item menu-close *ngIf="!status" [routerLink]="['/nfc-pinjam']">
+        <ion-icon name="book-outline" slot="start"></ion-icon>
+        <ion-label>Review Buku</ion-label>
       </ion-item>
       <ion-item menu-close (click)="logout()">
         <ion-icon name="trash" slot="start"></ion-icon>
@@ -37,7 +25,7 @@
 <div class="ion-page" id="main-content">
   <ion-header *ngIf="profileStatus">
     <ion-toolbar>
-      <ion-title>Profile</ion-title>     
+      <ion-title class="ion-text-center">Profile</ion-title>     
        <ion-buttons slot="start">
         <ion-menu-button></ion-menu-button>
       </ion-buttons>
@@ -67,7 +55,7 @@
           </div>
           <div>
             <ion-item>
-              <ion-label>Phone : {{phone}}</ion-label>
+              <ion-label>Mobile : {{phone}}</ion-label>
             </ion-item>
           </div>
           <div>

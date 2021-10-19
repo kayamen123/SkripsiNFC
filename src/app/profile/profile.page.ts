@@ -18,6 +18,7 @@ export class ProfilePage implements OnInit {
   role: string;
   phone: string;
   email: string;
+  logout_user = false;
   status = false;
   profileStatus = false;
   dateNow: any;
@@ -45,30 +46,6 @@ export class ProfilePage implements OnInit {
 
   ngOnInit() {
     this.presentLoading();
-   /* this.presentLoading().then(() => {
-      this.rgsSrv.getAllBookLibrary().snapshotChanges().pipe(
-        map(changes =>
-            changes.map(c => ({key: c.payload.key, ...c.payload.val()}))
-        )
-      ).subscribe(data => {
-        this.bookLib = data;
-        console.log(this.bookLib);
-        console.log(this.bookLib.length);
-      })
-      this.rgsSrv.getAllBorrowBook(this.name).snapshotChanges().pipe(
-        map(changes =>
-            changes.map(c => ({key: c.payload.key, ...c.payload.val()}))
-        )
-      ).subscribe(data => {
-        this.bookBorrow = data;
-        console.log(this.bookBorrow);
-        console.log(this.bookBorrow.length);
-        if(this.bookBorrow.length != 0) {
-          this.historyStatus = true;
-        }
-      })
-    });*/
-
   }
 
   async presentLoading (){
@@ -82,7 +59,6 @@ export class ProfilePage implements OnInit {
     await loading.present();
 
     const {role , data} = await loading.onDidDismiss();
-    this.helpAlert();
     this.profileStatus = true;
   }
 
@@ -98,9 +74,6 @@ export class ProfilePage implements OnInit {
     if(this.name == null) {
       this.router.navigate(['/login']);
     }
-    console.log("Name :",this.name);
-    console.log("Role :",this.role);
-    console.log("Photo: ",this.photo);
     if(this.role == 'admin') {
       this.status = true;
     }
@@ -108,32 +81,27 @@ export class ProfilePage implements OnInit {
       this.img.src = this.photo;
   }
 
-  // perpanjang(){
-  //  /* this.rgsSrv.getAllBorrowBook(this.name).snapshotChanges().pipe(
-  //     map(changes =>
-  //         changes.map(c => ({key: c.payload.key, ...c.payload.val()}))
-  //     )
-  //   ).subscribe(data => {
-  //     this.bookBorrow = data;
-  //     console.log(this.bookBorrow);
-  //     console.log(this.bookBorrow.length); 
-  //     this.dateNow = moment().format("MMM Do YY");  
-  //     if (this.dateNow == this.bookBorrow[0].valid_date){
-  //       this.isDateSame = true;
-  //       this.bookBorrow[0].valid_date = this.momentjs().add(1, 'days').format("MMM Do YY");
-  //       this.rgsSrv.updateValidDate(this.bookBorrow[0].key, this.bookBorrow[0], this.name).then(res => {
-  //         console.log(res);
-  //       }).catch(error => console.log(error));
-  //     }
-  //     console.log(this.isDateSame);
-  //   }) */
-
-  // }
-
   logout(){
-    localStorage.clear();
-    this.router.navigate(['/login']);
+    this.backButtonLogout();
   }
+  async backButtonLogout(){
+    const alert = await this.alertCtrl.create({
+       message: 'Do you want to Logout (To Finish this proses, Your app will be closed)?',
+       buttons: [{
+           text: 'Cancel',
+           role: 'cancel'
+       }, {
+         text: 'Exit',
+         handler: () => {
+            localStorage.clear();
+            navigator['app'].exitApp();
+         }
+       }]
+    });
+    
+    await alert.present();
+ }
+  
   
   inputBook(){
     this.router.navigate(['/nfc']);
@@ -148,6 +116,7 @@ export class ProfilePage implements OnInit {
     this.router.navigate(['/admin-cms-book']);
   }
 
+  
   async backButtonAlert(){
     const alert = await this.alertCtrl.create({
        message: 'Do you want to exit?',
@@ -164,20 +133,4 @@ export class ProfilePage implements OnInit {
     
     await alert.present();
  }
- async helpAlert(){
-  const alert = await this.alertCtrl.create({
-     message: 'Do you know how to use this App?',
-     buttons: [{
-         text: 'Yes',
-         role: 'cancel'
-     }, {
-       text: 'No',
-       handler: () => {
-         this.router.navigate(['/help-user']);
-       }
-     }]
-  });
-  
-  await alert.present();
-}
 }

@@ -1,6 +1,9 @@
 <ion-header *ngIf="hideTab">
   <ion-toolbar>
     <ion-title class="ion-text-center">Register</ion-title>
+    <ion-buttons slot="start">
+      <ion-back-button defaultHref="login"></ion-back-button>
+    </ion-buttons>
   </ion-toolbar>
 </ion-header>
 
@@ -104,7 +107,7 @@
   </ion-row>
     <ion-row>
       <ion-col>
-        <ion-button type="submit" color="danger" expand="block">Submit</ion-button>
+        <ion-button type="submit" color="danger" expand="block">Register</ion-button>
       </ion-col>
     </ion-row>
   </form>

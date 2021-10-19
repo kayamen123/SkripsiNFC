@@ -37,7 +37,7 @@
 <!-- <div class="ion-page" id="main-content"> -->
   <ion-header>
     <ion-toolbar>
-      <ion-title>NFC</ion-title>
+      <ion-title class="ion-text-center">Input Book</ion-title>
       <ion-buttons slot="start">
         <ion-back-button defaultHref="profile"></ion-back-button>
       </ion-buttons>
@@ -47,41 +47,36 @@
   <ion-content>
     <form [formGroup]="bookForm" (ngSubmit)="submitForm()" novalidate>
       <ion-item lines="full">
-        <ion-label position="floating">Book Name</ion-label>
-        <ion-input formControlName="book_name" type="text" (ionChange)="onChange()"></ion-input>
+        <ion-label position="floating">Book Title</ion-label>
+        <ion-input formControlName="book_name" type="text"></ion-input>
       </ion-item>
       <span style="color: red;" class="error ion-padding" *ngIf="isSubmitted && errorControl.book_name.errors?.required">
-        Name is required.
+        Book Title is required.
       </span>
       <span style="color: red;" class="error ion-padding" *ngIf="isSubmitted && errorControl.book_name.errors?.minlength">
-        Name should be min 2 chars long.
+        Book Title should be min 2 chars long.
+      </span>
+      <span style="color: white;" class="error ion-padding" *ngIf="checkCompress">
+        Book Title Compression Rasio = {{beforeCompressBook.length}}:{{afterCompressBook.length}}
       </span>
 
       <ion-item lines="full">
-        <ion-label position="floating">Writter</ion-label>
-        <ion-input formControlName="writter" type="text" (ionChange)="onChange()"></ion-input>
+        <ion-label position="floating">Author</ion-label>
+        <ion-input formControlName="writter" type="text"></ion-input>
       </ion-item>
       <span style="color: red;" class="error ion-padding" *ngIf="isSubmitted && errorControl.writter.errors?.required">
         Writter is required.
       </span>
+      <span style="color: white;" class="error ion-padding" *ngIf="checkCompress">
+        Writter Compression Rasio = {{beforeCompressWritter.length}}:{{afterCompressWritter.length}}
+      </span>
 
       <ion-item lines="full">
-        <ion-label position="floating">Date</ion-label>
-        <ion-datetime formControlName="date" displayFormat="D MMMM YYYY" [value]="myDate" disabled required></ion-datetime>
+        <ion-label position="floating">Published Date</ion-label>
+        <ion-datetime formControlName="date" displayFormat="D MMMM YYYY" value="1990-02-19" placeholder="Select Date"></ion-datetime>
       </ion-item>
       <span style="color: red;" class="error ion-padding" *ngIf="isSubmitted && errorControl.date.errors?.required">
-        Date is required.
-      </span>
-
-      <ion-item lines="full">
-        <ion-label position="floating">Description</ion-label>
-        <ion-textarea formControlName="description" type="text"></ion-textarea>
-      </ion-item>
-      <span style="color: red;" class="error ion-padding" *ngIf="isSubmitted && errorControl.description.errors?.required">
-        Description is required.
-      </span>
-      <span style="color: red;" class="error ion-padding" *ngIf="isSubmitted && errorControl.description.errors?.minlength">
-        Description should be min 10 chars long.
+        Publish Date is required.
       </span>
 
       <ion-item lines="full">
@@ -93,6 +88,20 @@
       </span>
       <span style="color: red;" class="error ion-padding" *ngIf="isSubmitted && errorControl.isbn.errors?.pattern">
         Only numerical values allowed.
+      </span>
+
+      <ion-item lines="full">
+        <ion-label position="floating">Review</ion-label>
+        <ion-textarea formControlName="description" type="text"></ion-textarea>
+      </ion-item>
+      <span style="color: red;" class="error ion-padding" *ngIf="isSubmitted && errorControl.description.errors?.required">
+        Review is required.
+      </span>
+      <span style="color: red;" class="error ion-padding" *ngIf="isSubmitted && errorControl.description.errors?.minlength">
+        Review should be min 10 chars long.
+      </span>
+      <span style="color: white;" class="error ion-padding" *ngIf="checkCompress">
+        Review Compression Rasio = {{beforeCompressReview.length}}:{{afterCompressReview.length}}
       </span>
 
       <ion-item>
